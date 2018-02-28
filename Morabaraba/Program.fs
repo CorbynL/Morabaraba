@@ -135,10 +135,10 @@ printfn "%A" theBoard.board     // print the board
 Console.ReadKey()       //Just to keep the console open
 
 
-[<EntryPoint>]
-let main argv = 
-    printfn "%A" argv
-    0 // return an integer exit code
+//[<EntryPoint>]
+//let main argv = 
+  //  printfn "%A" argv
+    //0 // return an integer exit code
 
 
 
