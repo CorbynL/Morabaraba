@@ -11,8 +11,41 @@ open System
 
 
 *)
+//VVVVVVVVVVVVV//
 
+module GameSession =      //Corbyn: basic idea of a game skeleton
+ 
+    type Board = {
+                
+        board : string list
+    }
+    //let DrawBoard =
+    //let UpdateBoard = 
 
+    type Cow = {
+
+        Position : char*int  // store position has letter and number, ie: (A,3)
+        isFlyingCow : bool   
+    }
+
+    type CowList = {
+        
+        hasThree : bool     // To now when cows can fly
+        hasTwo : bool       // Player has lost
+        Cows : CowList
+    }
+
+    type Player = {
+
+        Id : int            // Player Id. Player 1 will be (int 1)
+        IsPlaying : bool    // Is it this players turn?
+        isWinner : bool     // Player has won
+        Cows : CowList       
+    }
+    //let nextTurn =
+    //let gameOver =
+
+//^^^^^^^^^^^^//
 module Players = 
     
     type Character= {
