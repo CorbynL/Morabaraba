@@ -117,9 +117,6 @@ Console.ForegroundColor <- ConsoleColor.Green
 //--------------------Let The Games Begin--------------------
 open GameSession
 
-//Test
-//Console.WriteLine player2.Id
-
 
 printfn "%A" theBoard.board     // print the board
 
@@ -135,10 +132,12 @@ printfn "%A" theBoard.board     // print the board
 Console.ReadKey()       //Just to keep the console open
 
 
-//[<EntryPoint>]
-//let main argv = 
-  //  printfn "%A" argv
-    //0 // return an integer exit code
+
+
+
+
+
+
 
 
 
@@ -156,7 +155,12 @@ Console.ReadKey()       //Just to keep the console open
 //---------------------------RANDOM BITS OF CODE REMOVED------------------------------
 
 (*
-Console.ForegroundColor <- ConsoleColor.Green 
+
+//[<EntryPoint>]
+//let main argv = 
+  //  printfn "%A" argv
+    //0 // return an integer exit code
+
 
 Console.WriteLine "             1   2   3   4   5   6   7"
 Console.WriteLine ""
