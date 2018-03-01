@@ -17,44 +17,122 @@ open System.IO
 //VVVVVVVVVVVVV//
 
 module GameSession =      //Corbyn: basic idea of a game skeleton
-    open System.Security.Policy
  
+    type State = {
+
+         playerTurn : int
+
+    }
+    
     type Board = {
                 
         board : string list
+
     }
-
- //   let drawBoard (cows : char List) (board : string List) (cowsOnLine : int List) =      //Trying to print board with cows
- //       let rec printLines i =
- //           match i = String.length board with
- //           | false -> sprintf board.[i] cowsOnLine.[i]                                   // <- Not sure how to print string with n format inputs
- //           | _ -> i
- //       printLines
-
+ 
+      
     //let UpdateBoard = 
 
     type Cow = {
 
-        Position : char*int  // store position has letter and number, ie: (A,3)
+        Position : int  // store position has letter and number, ie: (A,3)
         isFlyingCow : bool 
-        isAlive : bool        // Richard: True if Alive
-    }
-
-    type CowList = {
-        
-        hasThree : bool     // To now when cows can fly
-        hasTwo : bool       // Player has lost
-        Cows : Cow List          // Richard: Was this meant to be CowList or Cow List? I changed it to Cow List
+        Id : int
     }
 
     type Player = {
 
         Id : int            // Player Id. Player 1 will be (int 1)
-        IsPlaying : bool    // Is it this players turn?
-        isWinner : bool     // Player has won
-        Cows : CowList       
+        isWinner : bool     // Player has won      
     }
-    
+ 
+    let getChar (cow : Cow)=
+        match cow.Id with
+        | 0 -> 'r'
+        | 1 -> 'b'
+        | _ -> ' '
+
+    let translatePos (PosInput : string) =
+        match PosInput.ToLower() with
+        | "a1" -> 0
+        | "a4" -> 1
+        | "a7" -> 2
+        | "b2" -> 3
+        | "b4" -> 4
+        | "b6" -> 5
+        | "c3" -> 6
+        | "c4" -> 7
+        | "c5" -> 8
+        | "d1" -> 9
+        | "d2" -> 10
+        | "d3" -> 11
+        | "d5" -> 12
+        | "d6" -> 13
+        | "d7" -> 14
+        | "e3" -> 15
+        | "e4" -> 16
+        | "e5" -> 17
+        | "f2" -> 18
+        | "f4" -> 19
+        | "f6" -> 20
+        | "g1" -> 21
+        | "g4" -> 22
+        | "g7" -> 23
+        | _ -> -1
+        
+
+    let drawBoard (list : Cow List)  =                                                                           // print the board
+         printfn "             1   2   3   4   5   6   7"
+         printfn ""
+         printfn "        A   (%c)---------(%c)---------(%c)" (getChar list.[0]) (getChar list.[1]) (getChar list.[2])
+         printfn "             | \         |         / |"
+         printfn "        B    |  (%c)-----(%c)-----(%c)  |" (getChar list.[3]) (getChar list.[4]) (getChar list.[5])
+         printfn "             |   | \     |     / |   |"
+         printfn "        C    |   |  (%c)-(%c)-(%c)  |   |" (getChar list.[6]) (getChar list.[7]) (getChar list.[8])
+         printfn "             |   |   |       |   |   |"
+         printfn "        D   (%c)-(%c)-(%c)     (%c)-(%c)-(%c)" (getChar list.[9]) (getChar list.[10]) (getChar list.[11]) (getChar list.[12]) (getChar list.[13]) (getChar list.[14])
+         printfn "             |   |   |       |   |   |"
+         printfn "        E    |   |  (%c)-(%c)-(%c)  |   |" (getChar list.[15]) (getChar list.[16]) (getChar list.[17])
+         printfn "             |   | /     |     \ |   |"
+         printfn "        F    |  (%c)-----(%c)-----(%c)  |" (getChar list.[18]) (getChar list.[19]) (getChar list.[20])
+         printfn "             | /         |         \ |"
+         printfn "        G   (%c)---------(%c)---------(%c)" (getChar list.[21]) (getChar list.[22]) (getChar list.[23])
+
+    let Start = 
+        printfn "Place your cows: Player one will place first"
+        
+        let emptyList () =
+            let rec COW i (list: Cow list) =
+                match i < 24 with
+                | false -> list
+                | _ -> 
+                    let newCow = {Position = i; isFlyingCow = true; Id = -1}
+                    COW (i + 1) (List.append [newCow] list)
+                
+            COW 0 []
+
+        let phaseOne cowList =
+            drawBoard cowList
+            let rec getCows i list =
+                match i = 24 with
+                | true -> list
+                | _ ->    
+                    Console.Clear()
+                    drawBoard list
+                    printfn "Player %d: Enter a cow position" (i%2 + 1)
+                    let pos = Console.ReadLine () |> translatePos
+                    let newCow = {Position = pos; isFlyingCow = false; Id = i % 2 }
+                    let a = List.toArray(list)
+                    Array.set (a) newCow.Position newCow
+                    let newlist = Array.toList (a) 
+                    
+                    getCows (i + 1)  newlist
+            getCows 0 cowList
+        
+        let y = emptyList ()
+        phaseOne (emptyList ())
+          
+  
     //let nextTurn =
     //let gameOver =
 
@@ -82,12 +160,13 @@ module GameSession =      //Corbyn: basic idea of a game skeleton
     }
     
 //--------------------Initialize Cows--------------------
-
+(*
     let Cow = {
         
         Position = ('Z',-1)
         isFlyingCow = false
-        isAlive = true
+        isEmpty = false
+        Id = 0
     }
 
     let listOfCows = {
@@ -115,7 +194,7 @@ module GameSession =      //Corbyn: basic idea of a game skeleton
         Cows = listOfCows 
     }
 
-    
+    *)
 //--------------------Console Properties--------------------
 
 Console.ForegroundColor <- ConsoleColor.Green 
@@ -123,53 +202,40 @@ Console.ForegroundColor <- ConsoleColor.Green
 
 //--------------------Let The Games Begin--------------------
 open GameSession
+ 
 
-//let ParseFile = File.ReadAllLines("../../../Graphics/Board.txt")
-printfn "%A" theBoard.board     // print the board
+//let ParseFile = File.ReadAllText("../../../Graphics/Board.txt")
+//let cows = ['b';'b';'b';'b';'b';'b';'b';'b';'b';'b';'b';'b';'b';'b';'b']
 
-
-
-
-
-
-
-
-
-
-
-Console.ReadKey()       //Just to keep the console open
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+let drawBoard (list : char list)  =                                                                           // print the board
+    printfn "             1   2   3   4   5   6   7"
+    printfn ""
+    printfn "        A   (%c)---------(%c)---------(%c)" list.[0] list.[1] list.[2]
+    printfn "             | \         |         / |"
+    printfn "        B    |  (%c)-----(%c)-----(%c)  |" list.[3] list.[4] list.[5]
+    printfn "             |   | \     |     / |   |"
+    printfn "        C    |   |  (%c)-(%c)-(%c)  |   |" list.[6] list.[7] list.[8]
+    printfn "             |   |   |       |   |   |"
+    printfn "        D   (%c)-(%c)-(%c)     (%c)-(%c)-(%c)" list.[9] list.[10] list.[11] list.[12] list.[13] list.[14]
+    printfn "             |   |   |       |   |   |"
+    printfn "        E    |   |  (%c)-(%c)-(%c)  |   |" list.[15] list.[16] list.[17]
+    printfn "             |   | /     |     \ |   |"
+    printfn "        F    |  (%c)-----(%c)-----(%c)  |" list.[18] list.[19] list.[20]
+    printfn "             | /         |         \ |"
+    printfn "        G   (%c)---------(%c)---------(%c)" list.[21] list.[22] list.[23]
+      //Just to keep the console open
 
 //---------------------------RANDOM BITS OF CODE REMOVED------------------------------
 
-(*
+[<EntryPoint>]
 
-//[<EntryPoint>]
-//let main argv = 
-  //  printfn "%A" argv
-    //0 // return an integer exit code
+let main argv = 
+    let x = GameSession.Start
+    Console.ReadKey() 
+    printfn "%A" argv
+    0 // return an integer exit code
 
-
+    (*
 Console.WriteLine "             1   2   3   4   5   6   7"
 Console.WriteLine ""
 Console.WriteLine "        A   ( )---------( )---------( )"
@@ -185,10 +251,7 @@ Console.WriteLine "             |   | /     |     \ |   |"
 Console.WriteLine "        F    |  ( )-----( )-----( )  |"
 Console.WriteLine "             | /         |         \ |"
 Console.WriteLine "        G   ( )---------( )---------( )"
-
-
-
-
+    
 module Players = 
     
     type Character= {
@@ -196,12 +259,4 @@ module Players =
         CurrentPos : int List
         RemainingCows : int         //Just messing around with an idea...
     }
-
-
-
-
-
-
-
-
-*)
+    *)
