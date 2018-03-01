@@ -29,9 +29,6 @@ module GameSession =      //Corbyn: basic idea of a game skeleton
         board : string list
 
     }
- 
-      
-    //let UpdateBoard = 
 
     type Cow = {
 
@@ -132,69 +129,8 @@ module GameSession =      //Corbyn: basic idea of a game skeleton
         let y = emptyList ()
         phaseOne (emptyList ())
           
-  
-    //let nextTurn =
-    //let gameOver =
 
 
-
-
-//--------------------Initialize board--------------------
-
-    let theBoard = {
-        board = [
-                "             1   2   3   4   5   6   7 " //Line 0
-                "        A   ( )---------( )---------( )"   //Line 1
-                "             | \         |         / |"    //Line 2
-                "        B    |  ( )-----( )-----( )  |"    //Line 3
-                "             |   | \     |     / |   |"    //Line 4
-                "        C    |   |  ( )-( )-( )  |   |"    //Line 5
-                "             |   |   |       |   |   |"    //Line 6
-                "        D   ( )-( )-( )     ( )-( )-( )"   //Line 7
-                "             |   |   |       |   |   |"    //Line 8
-                "        E    |   |  ( )-( )-( )  |   |"    //Line 9
-                "             |   | /     |     \ |   |"    //Line 10
-                "        F    |  ( )-----( )-----( )  |"    //Line 11
-                "             | /         |         \ |"    //Line 12
-                "        G   ( )---------( )---------( )"]  //Line 13
-    }
-    
-//--------------------Initialize Cows--------------------
-(*
-    let Cow = {
-        
-        Position = ('Z',-1)
-        isFlyingCow = false
-        isEmpty = false
-        Id = 0
-    }
-
-    let listOfCows = {
-        
-        hasThree = false
-        hasTwo = false
-        Cows = [Cow;Cow;Cow;Cow;Cow;Cow;Cow;Cow;Cow;Cow;Cow;Cow]    // 12 Cows 
-    }
-
-//--------------------Initialize Players-------------------- 
-
-    let player1 = {
-        
-        Id = 1
-        IsPlaying = true
-        isWinner = false
-        Cows = listOfCows 
-    }
-
-    let player2 = {
-        
-        Id = 2
-        IsPlaying = true
-        isWinner = false
-        Cows = listOfCows 
-    }
-
-    *)
 //--------------------Console Properties--------------------
 
 Console.ForegroundColor <- ConsoleColor.Green 
@@ -231,32 +167,5 @@ let drawBoard (list : char list)  =                                             
 
 let main argv = 
     let x = GameSession.Start
-    Console.ReadKey() 
     printfn "%A" argv
     0 // return an integer exit code
-
-    (*
-Console.WriteLine "             1   2   3   4   5   6   7"
-Console.WriteLine ""
-Console.WriteLine "        A   ( )---------( )---------( )"
-Console.WriteLine "             | \         |         / |"
-Console.WriteLine "        B    |  ( )-----( )-----( )  |"
-Console.WriteLine "             |   | \     |     / |   |"
-Console.WriteLine "        C    |   |  ( )-( )-( )  |   |"
-Console.WriteLine "             |   |   |       |   |   |"
-Console.WriteLine "        D   ( )-( )-( )     ( )-( )-( )"
-Console.WriteLine "             |   |   |       |   |   |"
-Console.WriteLine "        E    |   |  ( )-( )-( )  |   |"
-Console.WriteLine "             |   | /     |     \ |   |"
-Console.WriteLine "        F    |  ( )-----( )-----( )  |"
-Console.WriteLine "             | /         |         \ |"
-Console.WriteLine "        G   ( )---------( )---------( )"
-    
-module Players = 
-    
-    type Character= {
-        Name : string
-        CurrentPos : int List
-        RemainingCows : int         //Just messing around with an idea...
-    }
-    *)
