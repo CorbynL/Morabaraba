@@ -1,7 +1,7 @@
 ﻿// Learn more about F# at http://fsharp.org
 // See the 'F# Tutorial' project for more help.
 open System
-
+open System.IO
 
 
 (*
@@ -23,7 +23,14 @@ module GameSession =      //Corbyn: basic idea of a game skeleton
                 
         board : string list
     }
-    //let DrawBoard =
+
+ //   let drawBoard (cows : char List) (board : string List) (cowsOnLine : int List) =      //Trying to print board with cows
+ //       let rec printLines i =
+ //           match i = String.length board with
+ //           | false -> sprintf board.[i] cowsOnLine.[i]                                   // <- Not sure how to print string with n format inputs
+ //           | _ -> i
+ //       printLines
+
     //let UpdateBoard = 
 
     type Cow = {
@@ -117,8 +124,9 @@ Console.ForegroundColor <- ConsoleColor.Green
 //--------------------Let The Games Begin--------------------
 open GameSession
 
-
+//let ParseFile = File.ReadAllLines("../../../Graphics/Board.txt")
 printfn "%A" theBoard.board     // print the board
+
 
 
 
