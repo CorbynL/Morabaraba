@@ -95,6 +95,15 @@ module GameSession =      //Corbyn: basic idea of a game skeleton
          printfn "             | /         |         \ |"
          printfn "        G   (%c)---------(%c)---------(%c)" (getChar list.[21]) (getChar list.[22]) (getChar list.[23])
 
+    let rec getPos ()=                  //Check to see if a valid input has been recieved
+        let pos = (Console.ReadLine () |> translatePos)
+        match pos = -1 with
+        | false -> pos
+        | _ -> 
+            printfn "Incorrect possition, please enter a new one:"
+            getPos ()
+        
+
     let Start = 
         printfn "Place your cows: Player one will place first"
         
@@ -117,8 +126,7 @@ module GameSession =      //Corbyn: basic idea of a game skeleton
                     Console.Clear()
                     drawBoard list
                     printfn "Player %d: Enter a cow position" (i%2 + 1)
-                    let pos = Console.ReadLine () |> translatePos
-                    let newCow = {Position = pos; isFlyingCow = false; Id = i % 2 }
+                    let newCow = {Position = getPos(); isFlyingCow = false; Id = i % 2 }
                     let a = List.toArray(list)
                     Array.set (a) newCow.Position newCow
                     let newlist = Array.toList (a) 
