@@ -18,16 +18,16 @@ open System.IO
 
 module GameSession =      //Corbyn: basic idea of a game skeleton
  
+    Console.ForegroundColor <- ConsoleColor.Green 
+
     type State = {
 
          playerTurn : int
-
     }
     
     type Board = {
                 
         board : string list
-
     }
 
     type Cow = {
@@ -49,37 +49,21 @@ module GameSession =      //Corbyn: basic idea of a game skeleton
         | 1 -> 'b'
         | _ -> ' '
 
-    let translatePos (PosInput : string) =
-        match PosInput.ToLower() with
-        | "a1" -> 0
-        | "a4" -> 1
-        | "a7" -> 2
-        | "b2" -> 3
-        | "b4" -> 4
-        | "b6" -> 5
-        | "c3" -> 6
-        | "c4" -> 7
-        | "c5" -> 8
-        | "d1" -> 9
-        | "d2" -> 10
-        | "d3" -> 11
-        | "d5" -> 12
-        | "d6" -> 13
-        | "d7" -> 14
-        | "e3" -> 15
-        | "e4" -> 16
-        | "e5" -> 17
-        | "f2" -> 18
-        | "f4" -> 19
-        | "f6" -> 20
-        | "g1" -> 21
-        | "g4" -> 22
-        | "g7" -> 23
+    let translatePos (posInput : string) =
+        match posInput.ToLower() with
+        | "a1" -> 0 | "a4" -> 1 | "a7" -> 2
+        | "b2" -> 3 | "b4" -> 4 | "b6" -> 5
+        | "c3" -> 6 | "c4" -> 7 | "c5" -> 8
+        | "d1" -> 9 | "d2" -> 10| "d3" -> 11
+        | "d5" -> 12| "d6" -> 13| "d7" -> 14
+        | "e3" -> 15| "e4" -> 16| "e5" -> 17
+        | "f2" -> 18| "f4" -> 19| "f6" -> 20
+        | "g1" -> 21| "g4" -> 22| "g7" -> 23
         | _ -> -1
         
 
     let drawBoard (list : Cow List)  =                                                                           // print the board
-         printfn "             1   2   3   4   5   6   7"
+         printfn "\n\n             1   2   3   4   5   6   7"
          printfn ""
          printfn "        A   (%c)---------(%c)---------(%c)" (getChar list.[0]) (getChar list.[1]) (getChar list.[2])
          printfn "             | \         |         / |"
@@ -95,17 +79,9 @@ module GameSession =      //Corbyn: basic idea of a game skeleton
          printfn "             | /         |         \ |"
          printfn "        G   (%c)---------(%c)---------(%c)" (getChar list.[21]) (getChar list.[22]) (getChar list.[23])
 
-    let rec getPos ()=                  //Check to see if a valid input has been recieved
-        let pos = (Console.ReadLine () |> translatePos)
-        match pos = -1 with
-        | false -> pos
-        | _ -> 
-            printfn "Incorrect possition, please enter a new one:"
-            getPos ()
-        
 
     let Start = 
-        printfn "Place your cows: Player one will place first"
+        printfn "Place your cows: Player one will place first\n"
         
         let emptyList () =
             let rec COW i (list: Cow list) =
@@ -116,6 +92,16 @@ module GameSession =      //Corbyn: basic idea of a game skeleton
                     COW (i + 1) (List.append [newCow] list)
                 
             COW 0 []
+        
+        
+        let rec getPos ()=                  // Richard: Check to see if a valid input has been recieved           
+            let pos = (Console.ReadLine () |> translatePos)
+            match pos = -1 with
+            | false -> pos
+            | _ -> 
+                printfn "Incorrect possition, please enter a new one:"
+                getPos ()
+
 
         let phaseOne cowList =
             drawBoard cowList
@@ -125,51 +111,17 @@ module GameSession =      //Corbyn: basic idea of a game skeleton
                 | _ ->    
                     Console.Clear()
                     drawBoard list
-                    printfn "Player %d: Enter a cow position" (i%2 + 1)
+                    printfn "\n\nPlayer %d: Enter a cow position" (i%2 + 1)
                     let newCow = {Position = getPos(); isFlyingCow = false; Id = i % 2 }
                     let a = List.toArray(list)
                     Array.set (a) newCow.Position newCow
                     let newlist = Array.toList (a) 
-                    
                     getCows (i + 1)  newlist
             getCows 0 cowList
         
         let y = emptyList ()
         phaseOne (emptyList ())
-          
 
-
-//--------------------Console Properties--------------------
-
-Console.ForegroundColor <- ConsoleColor.Green 
-
-
-//--------------------Let The Games Begin--------------------
-open GameSession
- 
-
-//let ParseFile = File.ReadAllText("../../../Graphics/Board.txt")
-//let cows = ['b';'b';'b';'b';'b';'b';'b';'b';'b';'b';'b';'b';'b';'b';'b']
-
-let drawBoard (list : char list)  =                                                                           // print the board
-    printfn "             1   2   3   4   5   6   7"
-    printfn ""
-    printfn "        A   (%c)---------(%c)---------(%c)" list.[0] list.[1] list.[2]
-    printfn "             | \         |         / |"
-    printfn "        B    |  (%c)-----(%c)-----(%c)  |" list.[3] list.[4] list.[5]
-    printfn "             |   | \     |     / |   |"
-    printfn "        C    |   |  (%c)-(%c)-(%c)  |   |" list.[6] list.[7] list.[8]
-    printfn "             |   |   |       |   |   |"
-    printfn "        D   (%c)-(%c)-(%c)     (%c)-(%c)-(%c)" list.[9] list.[10] list.[11] list.[12] list.[13] list.[14]
-    printfn "             |   |   |       |   |   |"
-    printfn "        E    |   |  (%c)-(%c)-(%c)  |   |" list.[15] list.[16] list.[17]
-    printfn "             |   | /     |     \ |   |"
-    printfn "        F    |  (%c)-----(%c)-----(%c)  |" list.[18] list.[19] list.[20]
-    printfn "             | /         |         \ |"
-    printfn "        G   (%c)---------(%c)---------(%c)" list.[21] list.[22] list.[23]
-      //Just to keep the console open
-
-//---------------------------RANDOM BITS OF CODE REMOVED------------------------------
 
 [<EntryPoint>]
 
