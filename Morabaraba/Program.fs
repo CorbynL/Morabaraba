@@ -2,7 +2,6 @@
 // See the 'F# Tutorial' project for more help.
 open System
 
-
 (*
 //--------------------Program Info--------------------
 
@@ -78,6 +77,7 @@ module GameSession =
 
     }
 
+    //All possible mill variations
     let allMills = [
         { millPos = 0::1::2::[]; wasFormed = false}; // A1, A4, A7
         { millPos = 3::4::5::[]; wasFormed = false}; // B2, B4, B6
@@ -100,27 +100,31 @@ module GameSession =
         { millPos = 2::5::8::[]; wasFormed = false}; // C5, B6, A7
         { millPos = 17::20::23::[]; wasFormed = false}; // E5, F6, G7
     ]
-
+     
+    //get ID of cow at given position
     let getCowID pos (cows : Cow List) = 
-        (List.find (fun (x : Cow) -> pos = x.Id) cows).Id
+        cows.[pos].Id
 
+    //Get cow at given position
     let getCowAtPos (pos) (cows : Cow List) =
         List.find (fun (x : Cow) -> pos = x.Position) cows
-
+    
+    //Get all current mills a player currently owns
     let findMill (cows : Cow List) (mills : Mill list) (playerID : int) =
         let rec check (i : int) millList =
-            match i = cows.Length with 
-            | true -> millList
+            match i < mills.Length with 
+            | false -> millList
             | _ ->  
                 match (getCowID mills.[i].millPos.[0] cows, getCowID mills.[i].millPos.[1] cows, getCowID mills.[i].millPos.[2] cows )  = (playerID,playerID,playerID) with
                 | true -> check (i + 1) (mills.[i]::millList)
                 | _ -> check (i+1) millList
         check 0 []
-
+    
+    //Check if chosen cow is in a mill
     let canKill (pos : int) (mills : Mill List) (player : int) =
         let rec check i =   
-            match i = mills.Length with
-            | true -> false
+            match i < mills.Length with
+            | false -> true
             | _ -> 
                 match  List.exists ((=) pos) mills.[i].millPos with
                 | false -> check (i + 1)
@@ -129,11 +133,6 @@ module GameSession =
         | true -> false
         | _ -> check 0
         
-
-    let Start = 
-        printfn "Place your cows: Player one will place first\n"               
-        
-            
     let rec getPos ()=                  // Richard: Check to see if a valid input has been recieved           
             let pos = (Console.ReadLine () |> translatePos)
             match pos = -1 with
@@ -141,53 +140,67 @@ module GameSession =
             | _ -> 
                 printfn "Incorrect possition, please enter a new one:"
                 getPos ()
-
-    let updateCOWList (oldList: Cow List) (possition: int) (newCow: Cow) =
-        let rec updateList (newList:Cow List) a =
-            match a < 0 with
-            | true -> newList
-            | _ ->
-                match a = possition with
-                | true -> updateList (newCow::newList) (a-1)
-                |_-> 
-                    updateList (oldList.[a]::newList) (a-1)
-        updateList [] 23
     
-    let canKillCow (mills : Mill List) (cow : Cow) : bool =
-        let rec findCow i =
-            match i < mills.Length with
-            | true -> 
-                match List.exists ((=) cow.Position) mills.[i].millPos with
-                | true -> false
-                | _ -> findCow (i + 1)
-            | _ -> false
-        match mills.Length = 0 with
-        | true -> false
-        | _ -> findCow 0
-                    
+    //Replace cow at a given position with a given cow
+    let updateCOWList (oldList: Cow List) (possition: int) (newCow: Cow) =
+            let rec updateList (newList:Cow List) a =
+                match a < 0 with
+                | true -> newList
+                | _ ->
+                    match a = possition with
+                    | true -> updateList (newCow::newList) (a-1)
+                    |_-> 
+                        updateList (oldList.[a]::newList) (a-1)
+            updateList [] 23
+    
+    //Kill chosen cow and replace dead cow with empty cow
     let killCow (pos : int) (cows : Cow List) =        
         updateCOWList cows pos emptyCow
 
+    // Check for mill, let player kill cow if mill exists. Verification Needed
+    let checkMill (cows : Cow List) (mills : Mill list) (playerID : int) =
+        let currentMills = findMill cows mills playerID        
+        match currentMills.Length with
+        | 0 -> cows
+        | _ -> 
+            printfn "Chose cow to fill"
+            let rec tryKill () =
+                let cowToKill = getPos ()
+                match canKill (cowToKill) currentMills playerID with
+                | true ->
+                    printfn "Cow was killed"
+                    killCow cowToKill cows
+                | _ ->
+                    printf "Cannot kill that one"
+                    tryKill ()
+            tryKill () 
+            
+    //Initialise cow list with empty cows                
     let emptyList () =
         List.init 24 (fun x -> {Position = -1; isFlyingCow = false; Id = -1 })
+    
+    //Start game loop
+    let Start = 
+        printfn "Place your cows: Player one will place first\n"               
+                        
 
     let phaseOne cowList =
         let rec getCows i (list : Cow List) =
             match i = 24 with
                     | true -> list
-                    | _ ->    
+                    | _ ->
+                        //
+                        // TO DO: Clean up method
+                        //
                         Console.Clear()
                         drawBoard list
                         printfn "\n\nPlayer %d: Enter a cow position" (i%2 + 1)
                         let pos = getPos()
                         let newCow = {Position = pos; isFlyingCow = false; Id = i % 2 }
-                        let newCowList = updateCOWList list pos newCow
-                        let millList = findMill list allMills (i % 2) 
-                        
-                        // if mill, player input, if valid input, KILL THE COW
-                        
-                        let a = getCowAtPos 0 newCowList
-                        getCows (i + 1) newCowList
+                        let newCowList = updateCOWList list pos newCow          //List before checking for mills and possibly killing cow
+                        let newCowList2 =  checkMill newCowList allMills (i%2)  //List after ^
+                             
+                        getCows (i + 1) newCowList2
         getCows 0 cowList
     let y = emptyList ()
     phaseOne (emptyList ())
