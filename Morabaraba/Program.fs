@@ -1,20 +1,6 @@
 ﻿// Learn more about F# at http://fsharp.org
 // See the 'F# Tutorial' project for more help.
 open System
-open System.IO
-
-
-(*
-//--------------------Program Info--------------------
-
-    Random Notes about Game:
-        24 possible Possitions
-        20 possible rows of 3 cows
-        8 Possitions with the possiblity of 4 cows next to them, the rest can only have 3
-
-
-*)
-//VVVVVVVVVVVVV//
 
 module GameSession =      //Corbyn: basic idea of a game skeleton
  
@@ -112,11 +98,24 @@ module GameSession =      //Corbyn: basic idea of a game skeleton
                     Console.Clear()
                     drawBoard list
                     printfn "\n\nPlayer %d: Enter a cow position" (i%2 + 1)
-                    let newCow = {Position = getPos(); isFlyingCow = false; Id = i % 2 }
-                    let a = List.toArray(list)
-                    Array.set (a) newCow.Position newCow
-                    let newlist = Array.toList (a) 
-                    getCows (i + 1)  newlist
+                    let pos =getPos()
+                    let newCow = {Position = pos; isFlyingCow = false; Id = i % 2 }
+                    let newCowList =
+                        let rec updateList (newList:Cow List) a =
+                            match a < 0 with
+                            | true -> newList
+                            | _ ->
+                                match a = pos with
+                                | true -> updateList (newCow::newList) (a-1)
+                                |_-> 
+                                    updateList (list.[a]::newList) (a-1)
+                        updateList [] 23         
+                    
+                    
+                    //let a = List.toArray(list)
+                    //Array.set (a) newCow.Position newCow
+                    //let newlist = Array.toList (a) 
+                    getCows (i + 1)  newCowList
             getCows 0 cowList
         
         let y = emptyList ()
