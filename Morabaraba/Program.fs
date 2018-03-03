@@ -121,17 +121,20 @@ module GameSession =
         check 0 []
     
     //Check if chosen cow is in a mill
-    let canKill (pos : int) (mills : Mill List) (player : int) =
-        let rec check i =   
-            match i < mills.Length with
-            | false -> true
-            | _ -> 
-                match  List.exists ((=) pos) mills.[i].millPos with
-                | false -> check (i + 1)
-                | _ -> true
-        match mills.Length = 0 with
+    let canKill (pos : int) (mills : Mill List) (player : int) (cows : Cow List) =
+        match (getCowAtPos pos cows).Id = player with   // Check if cow to kill is players own cow
         | true -> false
-        | _ -> check 0
+        | _ ->
+            let rec check i =   
+                match i < mills.Length with
+                | false -> true
+                | _ -> 
+                    match  List.exists ((=) pos) mills.[i].millPos with
+                    | false -> check (i + 1)
+                    | _ -> true
+            match mills.Length = 0 with
+            | true -> false
+            | _ -> check 0
         
     let rec getPos ()=                  // Richard: Check to see if a valid input has been recieved           
             let pos = (Console.ReadLine () |> translatePos)
@@ -166,7 +169,7 @@ module GameSession =
             printfn "Chose cow to fill"
             let rec tryKill () =
                 let cowToKill = getPos ()
-                match canKill (cowToKill) currentMills playerID with
+                match canKill (cowToKill) currentMills playerID cows with
                 | true ->
                     printfn "Cow was killed"
                     killCow cowToKill cows
