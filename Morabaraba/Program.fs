@@ -29,7 +29,6 @@ module GameSession =
         Position : int 
         isFlyingCow : bool 
         Id : int
-        cowID : int
     }
 
     type Board = {
@@ -61,7 +60,7 @@ module GameSession =
     }
 
     let initiateBoard =
-        let emptyCow = {Position = -1; isFlyingCow = false; Id = -1; cowID = -1}
+        let emptyCow = {Position = -1; isFlyingCow = false; Id = -1}
         {A1 = emptyCow; A4 = emptyCow; A7 = emptyCow;
          B2 = emptyCow; B4 = emptyCow; B6 = emptyCow;
          C3 = emptyCow; C4 = emptyCow; C5 = emptyCow;
@@ -106,23 +105,23 @@ module GameSession =
         | "g1" -> 21| "g4" -> 22| "g7" -> 23
         | _ -> -1        
 
-    let drawBoard (board : Board)  =                                                                           // print the board
-         printfn "\n\n             1   2   3   4   5   6   7"
+    let drawBoard (list : Cow List)  =                                                                           // print the board
+         printfn "             1   2   3   4   5   6   7"
          printfn ""
-         printfn "        A   (%c)---------(%c)---------(%c)" (getChar board.A1) (getChar board.A4) (getChar board.A7)
+         printfn "        A   (%c)---------(%c)---------(%c)" (getChar list.[0]) (getChar list.[1]) (getChar list.[2])
          printfn "             | \         |         / |"
-         printfn "        B    |  (%c)-----(%c)-----(%c)  |" (getChar board.B2) (getChar board.B4) (getChar board.B6)
+         printfn "        B    |  (%c)-----(%c)-----(%c)  |" (getChar list.[3]) (getChar list.[4]) (getChar list.[5])
          printfn "             |   | \     |     / |   |"
-         printfn "        C    |   |  (%c)-(%c)-(%c)  |   |" (getChar board.C3) (getChar board.C4) (getChar board.C5)
+         printfn "        C    |   |  (%c)-(%c)-(%c)  |   |" (getChar list.[6]) (getChar list.[7]) (getChar list.[8])
          printfn "             |   |   |       |   |   |"
-         printfn "        D   (%c)-(%c)-(%c)     (%c)-(%c)-(%c)" (getChar board.D1) (getChar board.D2) (getChar board.D3) (getChar board.D5) (getChar board.D6) (getChar board.D7)
+         printfn "        D   (%c)-(%c)-(%c)     (%c)-(%c)-(%c)" (getChar list.[9]) (getChar list.[10]) (getChar list.[11]) (getChar list.[12]) (getChar list.[13]) (getChar list.[14])
          printfn "             |   |   |       |   |   |"
-         printfn "        E    |   |  (%c)-(%c)-(%c)  |   |" (getChar board.E3) (getChar board.E4) (getChar board.E5)
+         printfn "        E    |   |  (%c)-(%c)-(%c)  |   |" (getChar list.[15]) (getChar list.[16]) (getChar list.[17])
          printfn "             |   | /     |     \ |   |"
-         printfn "        F    |  (%c)-----(%c)-----(%c)  |" (getChar board.F2) (getChar board.F4) (getChar board.F6)
+         printfn "        F    |  (%c)-----(%c)-----(%c)  |" (getChar list.[18]) (getChar list.[19]) (getChar list.[20])
          printfn "             | /         |         \ |"
-         printfn "        G   (%c)---------(%c)---------(%c)" (getChar board.G1) (getChar board.G4) (getChar board.G7)
-
+         printfn "        G   (%c)---------(%c)---------(%c)" (getChar list.[21]) (getChar list.[22]) (getChar list.[23])
+    
     type Mill = {
 
         millPos : int List
@@ -205,42 +204,49 @@ module GameSession =
         printfn "Place your cows: Player one will place first\n"               
         
             
-        let rec getPos (boardState : Board)=                  // Richard: Check to see if a valid input has been recieved           
+    let rec getPos ()=                  // Richard: Check to see if a valid input has been recieved           
             let pos = (Console.ReadLine () |> translatePos)
             match pos = -1 with
-            | true -> 
-                printfn "Incorrect possition, please enter a new one:"
-                getPos boardState
+            | false -> pos
             | _ -> 
-                match (getCowPos pos boardState) = -1 with
-                | false -> 
-                     printfn "Already a cow at that position"
-                     getPos boardState
-                | _ -> pos
-                
+                printfn "Incorrect possition, please enter a new one:"
+                getPos ()
 
-        let phaseOne (boardState : Board) =
-            drawBoard boardState
-            let rec getCows i (board : Board) =
-                match i = 24 with
-                | true -> boardState
-                | _ ->    
-                    Console.Clear()
-                    drawBoard board
-                    printfn "\n\nPlayer %d: Enter a cow position" (i%2 + 1)
-                    let newPos = getPos board
-                    let newCow = {Position = newPos; isFlyingCow = false; Id = i % 2; cowID = i } 
-                    let newBoard = updateBoardPosition newPos board newCow
-                    let currentMills = findMill newBoard allMills (i % 2)
-                    let b = canKill 0 currentMills (i % 2)
-                    getCows (i + 1)  (updateBoardPosition newPos board newCow)
-            getCows 0 boardState
-        
-        phaseOne (initiateBoard)
-        printf "\nPhase one completed"
-        Console.ReadKey ()
+    let updateCOWList (oldList: Cow List) (possition: int) (newCow: Cow) =
+        let rec updateList (newList:Cow List) a =
+            match a < 0 with
+            | true -> newList
+            | _ ->
+                match a = possition with
+                | true -> updateList (newCow::newList) (a-1)
+                |_-> 
+                    updateList (oldList.[a]::newList) (a-1)
+        updateList [] 23
+ 
+    let emptyList () =
+        List.init 24 (fun x -> {Position = -1; isFlyingCow = false; Id = -1 })
 
-
+    let phaseOne cowList =
+        let rec getCows i (list : Cow List) =
+            Console.Clear()
+            drawBoard list
+            printfn "\n\nPlayer %d: Enter a cow position" (i%2 + 1)
+            let pos = getPos()
+            let newCow = {Position = pos; isFlyingCow = false; Id = i % 2 }
+            let newCowList =
+                let rec updateList (newList:Cow List) (a: int) =
+                    match a < 0 with
+                    | true -> newList
+                    | _ ->
+                        match a = pos with
+                        | true -> updateList (newCow::newList) (a-1)
+                        |_-> 
+                            updateList (list.[a]::newList) (a-1)
+                updateList [] 23
+            getCows (i + 1)  newCowList
+        getCows 0 cowList
+    let y = emptyList ()
+    phaseOne (emptyList ())
 [<EntryPoint>]
 
 let main argv = 
