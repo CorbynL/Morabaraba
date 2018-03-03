@@ -1,7 +1,6 @@
 ﻿// Learn more about F# at http://fsharp.org
 // See the 'F# Tutorial' project for more help.
 open System
-open System.IO
 
 
 (*
@@ -11,7 +10,6 @@ open System.IO
         24 possible Possitions
         20 possible rows of 3 cows
         8 Possitions with the possiblity of 4 cows next to them, the rest can only have 3
-
 
 *)
 
@@ -31,44 +29,7 @@ module GameSession =
         Id : int
     }
 
-    type Board = {
-                
-        A1 : Cow
-        A4 : Cow
-        A7 : Cow
-        B2 : Cow
-        B4 : Cow
-        B6 : Cow
-        C3 : Cow
-        C4 : Cow
-        C5 : Cow
-        D1 : Cow
-        D2 : Cow
-        D3 : Cow
-        D5 : Cow
-        D6 : Cow
-        D7 : Cow
-        E3 : Cow
-        E4 : Cow
-        E5 : Cow
-        F2 : Cow
-        F4 : Cow
-        F6 : Cow
-        G1 : Cow
-        G4 : Cow
-        G7 : Cow
-    }
-
-    let initiateBoard =
-        let emptyCow = {Position = -1; isFlyingCow = false; Id = -1}
-        {A1 = emptyCow; A4 = emptyCow; A7 = emptyCow;
-         B2 = emptyCow; B4 = emptyCow; B6 = emptyCow;
-         C3 = emptyCow; C4 = emptyCow; C5 = emptyCow;
-         D1 = emptyCow; D2 = emptyCow; D3 = emptyCow; D5 = emptyCow; D6 = emptyCow; D7 = emptyCow; 
-         E3 = emptyCow; E4 = emptyCow; E5 = emptyCow;
-         F2 = emptyCow; F4 = emptyCow; F6 = emptyCow;
-         G1 = emptyCow; G4 = emptyCow; G7 = emptyCow 
-         }
+    let emptyCow = {Position = -1; isFlyingCow = false; Id = -1}
 
     type Player = {
 
@@ -81,18 +42,6 @@ module GameSession =
         | 0 -> 'r'
         | 1 -> 'b'
         | _ -> ' '
-
-    let updateBoardPosition (posInput : int) (boardState : Board) (newCow : Cow) =
-        match posInput with
-        | 0 ->  {boardState with A1 = newCow } | 1 ->  {boardState with A4 = newCow } | 2 ->  {boardState with A7 = newCow }
-        | 3 ->  {boardState with B2 = newCow } | 4 ->  {boardState with B4 = newCow } | 5 ->  {boardState with B6 = newCow }
-        | 6 ->  {boardState with C3 = newCow } | 7 ->  {boardState with C4 = newCow } | 8 ->  {boardState with C5 = newCow }
-        | 9 ->  {boardState with D1 = newCow } | 10 -> {boardState with D2 = newCow } | 11 -> {boardState with D3 = newCow }
-        | 12 -> {boardState with D5 = newCow } | 13 -> {boardState with D6 = newCow } | 14 -> {boardState with D7 = newCow }
-        | 15 -> {boardState with E3 = newCow } | 16 -> {boardState with E4 = newCow } | 17 -> {boardState with E5 = newCow }
-        | 18 -> {boardState with F2 = newCow } | 19 -> {boardState with F4 = newCow } | 20 -> {boardState with F6 = newCow }
-        | 21 -> {boardState with G1 = newCow } | 22 -> {boardState with G4 = newCow } | 23 -> {boardState with G7 = newCow }
-        | _ -> failwith "Bruh"
 
     let translatePos (posInput : string)  =
         match posInput.ToLower() with
@@ -152,36 +101,18 @@ module GameSession =
         { millPos = 17::20::23::[]; wasFormed = false}; // E5, F6, G7
     ]
 
-    let getCowID pos (boardState : Board) = 
-        match pos with
-        | 0 ->  boardState.A1.Id | 1 ->  boardState.A4.Id | 2 ->  boardState.A7.Id
-        | 3 ->  boardState.B2.Id | 4 ->  boardState.B4.Id | 5 ->  boardState.B6.Id
-        | 6 ->  boardState.C3.Id | 7 ->  boardState.C4.Id | 8 ->  boardState.C5.Id
-        | 9 -> boardState.D1.Id  | 10 -> boardState.D2.Id | 11 -> boardState.D3.Id
-        | 12 -> boardState.D5.Id | 13 -> boardState.D6.Id | 14 -> boardState.D7.Id
-        | 15 -> boardState.E3.Id | 16 -> boardState.E4.Id | 17 -> boardState.E5.Id
-        | 18 -> boardState.F2.Id | 19 -> boardState.F4.Id| 20 -> boardState.F6.Id
-        | 21 -> boardState.G1.Id | 22 -> boardState.G4.Id | 23 -> boardState.G7.Id
-        | _ -> failwith "Bruh"
+    let getCowID pos (cows : Cow List) = 
+        (List.find (fun (x : Cow) -> pos = x.Id) cows).Id
 
-    let getCowPos (pos) (boardState : Board) =
-        match pos with
-        | 0 ->  boardState.A1.Position | 1 ->  boardState.A4.Position | 2 ->  boardState.A7.Position
-        | 3 ->  boardState.B2.Position | 4 ->  boardState.B4.Position | 5 ->  boardState.B6.Position
-        | 6 ->  boardState.C3.Position | 7 ->  boardState.C4.Position | 8 ->  boardState.C5.Position
-        | 9 -> boardState.D1.Position | 10 -> boardState.D2.Position | 11 -> boardState.D3.Position
-        | 12 -> boardState.D5.Position | 13 -> boardState.D6.Position | 14 -> boardState.D7.Position
-        | 15 -> boardState.E3.Position | 16 -> boardState.E4.Position | 17 -> boardState.E5.Position
-        | 18 -> boardState.F2.Position | 19 -> boardState.F4.Position| 20 -> boardState.F6.Position
-        | 21 -> boardState.G1.Position | 22 -> boardState.G4.Position | 23 -> boardState.G7.Position
-        | _ -> failwith "Bruh"
+    let getCowAtPos (pos) (cows : Cow List) =
+        List.find (fun (x : Cow) -> pos = x.Position) cows
 
-    let findMill (boardState : Board) (mills : Mill list) (playerID : int) =
+    let findMill (cows : Cow List) (mills : Mill list) (playerID : int) =
         let rec check (i : int) millList =
-            match i = 20 with //fuck you
+            match i = cows.Length with 
             | true -> millList
             | _ ->  
-                match (getCowID mills.[i].millPos.[0] boardState, getCowID mills.[i].millPos.[1] boardState, getCowID mills.[i].millPos.[2] boardState)  = (playerID,playerID,playerID) with
+                match (getCowID mills.[i].millPos.[0] cows, getCowID mills.[i].millPos.[1] cows, getCowID mills.[i].millPos.[2] cows )  = (playerID,playerID,playerID) with
                 | true -> check (i + 1) (mills.[i]::millList)
                 | _ -> check (i+1) millList
         check 0 []
@@ -197,7 +128,6 @@ module GameSession =
         match mills.Length = 0 with
         | true -> false
         | _ -> check 0
-    //let killCow (pos : int) (mills : Mill List) =
         
 
     let Start = 
@@ -222,31 +152,47 @@ module GameSession =
                 |_-> 
                     updateList (oldList.[a]::newList) (a-1)
         updateList [] 23
- 
+    
+    let canKillCow (mills : Mill List) (cow : Cow) : bool =
+        let rec findCow i =
+            match i < mills.Length with
+            | true -> 
+                match List.exists ((=) cow.Position) mills.[i].millPos with
+                | true -> false
+                | _ -> findCow (i + 1)
+            | _ -> false
+        match mills.Length = 0 with
+        | true -> false
+        | _ -> findCow 0
+                    
+    let killCow (pos : int) (cows : Cow List) =        
+        updateCOWList cows pos emptyCow
+
     let emptyList () =
         List.init 24 (fun x -> {Position = -1; isFlyingCow = false; Id = -1 })
 
     let phaseOne cowList =
         let rec getCows i (list : Cow List) =
-            Console.Clear()
-            drawBoard list
-            printfn "\n\nPlayer %d: Enter a cow position" (i%2 + 1)
-            let pos = getPos()
-            let newCow = {Position = pos; isFlyingCow = false; Id = i % 2 }
-            let newCowList =
-                let rec updateList (newList:Cow List) (a: int) =
-                    match a < 0 with
-                    | true -> newList
-                    | _ ->
-                        match a = pos with
-                        | true -> updateList (newCow::newList) (a-1)
-                        |_-> 
-                            updateList (list.[a]::newList) (a-1)
-                updateList [] 23
-            getCows (i + 1)  newCowList
+            match i = 24 with
+                    | true -> list
+                    | _ ->    
+                        Console.Clear()
+                        drawBoard list
+                        printfn "\n\nPlayer %d: Enter a cow position" (i%2 + 1)
+                        let pos = getPos()
+                        let newCow = {Position = pos; isFlyingCow = false; Id = i % 2 }
+                        let newCowList = updateCOWList list pos newCow
+                        let millList = findMill list allMills (i % 2) 
+                        
+                        // if mill, player input, if valid input, KILL THE COW
+                        
+                        let a = getCowAtPos 0 newCowList
+                        getCows (i + 1) newCowList
         getCows 0 cowList
     let y = emptyList ()
     phaseOne (emptyList ())
+
+    
 [<EntryPoint>]
 
 let main argv = 
