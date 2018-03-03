@@ -65,6 +65,29 @@ module GameSession =      //Corbyn: basic idea of a game skeleton
          printfn "             | /         |         \ |"
          printfn "        G   (%c)---------(%c)---------(%c)" (getChar list.[21]) (getChar list.[22]) (getChar list.[23])
 
+    let rec getPos ()=                  // Richard: Check to see if a valid input has been recieved           
+            let pos = (Console.ReadLine () |> translatePos)
+            match pos = -1 with
+            | false -> pos
+            | _ -> 
+                printfn "Incorrect possition, please enter a new one:"
+                getPos ()
+
+    let updateCOWList (oldList: Cow List) (possition: int) (newCow: Cow) =
+        let rec updateList (newList:Cow List) a =
+            match a < 0 with
+            | true -> newList
+            | _ ->
+                match a = possition with
+                | true -> updateList (newCow::newList) (a-1)
+                |_-> 
+                    updateList (oldList.[a]::newList) (a-1)
+        updateList [] 23
+
+
+
+
+
 
     let Start = 
         printfn "Place your cows: Player one will place first\n"
@@ -78,17 +101,7 @@ module GameSession =      //Corbyn: basic idea of a game skeleton
                     COW (i + 1) (List.append [newCow] list)
                 
             COW 0 []
-        
-        
-        let rec getPos ()=                  // Richard: Check to see if a valid input has been recieved           
-            let pos = (Console.ReadLine () |> translatePos)
-            match pos = -1 with
-            | false -> pos
-            | _ -> 
-                printfn "Incorrect possition, please enter a new one:"
-                getPos ()
-
-
+       
         let phaseOne cowList =
             drawBoard cowList
             let rec getCows i list =
@@ -100,16 +113,7 @@ module GameSession =      //Corbyn: basic idea of a game skeleton
                     printfn "\n\nPlayer %d: Enter a cow position" (i%2 + 1)
                     let pos =getPos()
                     let newCow = {Position = pos; isFlyingCow = false; Id = i % 2 }
-                    let newCowList =
-                        let rec updateList (newList:Cow List) a =
-                            match a < 0 with
-                            | true -> newList
-                            | _ ->
-                                match a = pos with
-                                | true -> updateList (newCow::newList) (a-1)
-                                |_-> 
-                                    updateList (list.[a]::newList) (a-1)
-                        updateList [] 23         
+                    let newCowList = updateCOWList list pos newCow              // Creates a new list and places the new cow in its possition
                     
                     //let a = List.toArray(list)
                     //Array.set (a) newCow.Position newCow
