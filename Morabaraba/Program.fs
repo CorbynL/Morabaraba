@@ -111,7 +111,6 @@ module GameSession =      //Corbyn: basic idea of a game skeleton
                                     updateList (list.[a]::newList) (a-1)
                         updateList [] 23         
                     
-                    
                     //let a = List.toArray(list)
                     //Array.set (a) newCow.Position newCow
                     //let newlist = Array.toList (a) 
