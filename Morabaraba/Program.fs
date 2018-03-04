@@ -136,7 +136,8 @@ module GameSession =
             | true -> false
             | _ -> check 0
         
-    let rec getPos ()=                  // Richard: Check to see if a valid input has been recieved           
+    // Check to see if a valid input has been recieved
+    let rec getPos ()=                             
             let pos = (Console.ReadLine () |> translatePos)
             match pos = -1 with
             | false -> pos
@@ -184,7 +185,7 @@ module GameSession =
     
     //Start game loop
     let Start = 
-        printfn "Place your cows: Player one will place first\n"               
+                       
                         
 
     let phaseOne cowList =
@@ -196,6 +197,7 @@ module GameSession =
                         // TO DO: Clean up method
                         //
                         Console.Clear()
+                        printfn "\nPlace your cows: Player one will place first\n"
                         drawBoard list
                         printfn "\n\nPlayer %d: Enter a cow position" (i%2 + 1)
                         let pos = getPos()
