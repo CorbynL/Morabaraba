@@ -120,13 +120,13 @@ module GameSession =
                 | _ -> check (i+1) millList
         check 0 []
     
-    //Check if chosen cow is in a mill
+    // Check if chosen cow is in a mill
     let canKill (pos : int) (mills : Mill List) (player : int) (cows : Cow List) =
-        match (getCowAtPos pos cows).Id = player with   // Check if cow to kill is players own cow
+        match (getCowAtPos pos cows).Id = player with   // Check if cow to kill is players own cow    //there's a bug here that throws an exception if you try kill a cow at an index where there is no cow
         | true -> false
         | _ ->
             let rec check i =   
-                match i < mills.Length with
+                match i < mills.Length with     //
                 | false -> true
                 | _ -> 
                     match  List.exists ((=) pos) mills.[i].millPos with
@@ -175,7 +175,7 @@ module GameSession =
                     printfn "Cow was killed"
                     killCow cowToKill cows
                 | _ ->
-                    printf "Cannot kill that one"
+                    printfn "Cannot kill that one"
                     tryKill ()
             tryKill () 
             
@@ -198,7 +198,7 @@ module GameSession =
                         //
                         Console.Clear()
                         printfn "\nPlace your cows: Player one will place first\n"
-                        drawBoard list
+                        drawBoard list                                                      //When a mill is formed, it only draws the cow that formed the mill, after you kill a cow
                         printfn "\n\nPlayer %d: Enter a cow position" (i%2 + 1)
                         let pos = getPos()
                         let newCow = {Position = pos; isFlyingCow = false; Id = i % 2 }
