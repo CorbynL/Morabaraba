@@ -118,7 +118,7 @@ module GameSession =
                     | true -> updateList (newMill::newList) (a-1)
                     |_-> 
                         updateList (oldList.[a]::newList) (a-1)
-            updateList [] 19  
+            updateList [] (oldList.Length - 1)  
 
     let getCurrentMillPos (millList : Mill List) (mill: Mill) =
         let rec find i =
@@ -133,33 +133,45 @@ module GameSession =
     //Get all current mills a player currently owns
     let updateMills (cows : Cow List)  (playerID : int) (currMill : Mill List) : Mill List =
         let rec check (i : int) newMillList =
-            match i < allMills.Length with 
-            | false -> newMillList
-            | _ ->  
-                match (getCowID allMills.[i].millPos.[0] cows, getCowID allMills.[i].millPos.[1] cows, getCowID allMills.[i].millPos.[2] cows )  = (playerID,playerID,playerID) with
+           match i < allMills.Length with
+           | false -> newMillList
+           | _ -> 
+                let cowIDs = (getCowID allMills.[i].millPos.[0] cows, getCowID allMills.[i].millPos.[1] cows, getCowID allMills.[i].millPos.[2] cows )  
+                match cowIDs = (playerID,playerID,playerID) with        // Does this particular mill exist on the board (for playerID)?
                 | true -> 
-                    match List.exists ((fun (x : Mill) (y : Mill) -> x.millPos = y.millPos) allMills.[i]) newMillList with
+                    match List.exists ((fun (x : Mill) (y : Mill) -> x.millPos = y.millPos) allMills.[i]) newMillList with      // Is the mill currently in our list?    
                     | false -> check (i + 1) ({millPos = allMills.[i].millPos; isFormed = true; isNew = true} :: newMillList)
-                    | _ -> check (i + 1) (updateMillList newMillList (getCurrentMillPos newMillList newMillList.[i])  {newMillList.[i] with isNew = false}) //Mill is in current Mills, therfore is no longer new
+                    | _ -> check (i + 1) (updateMillList newMillList (getCurrentMillPos newMillList allMills.[i])  {allMills.[i] with isNew = false}) // Mill is in current Mills, therfore is no longer new
                 | _ -> 
-                    match (List.tryFind ((fun (x : Mill) y -> x.millPos = y.millPos) allMills.[i]) newMillList) with
-                    | None -> check (i + 1) newMillList
-                    | _ -> List.filter ((fun (x : Mill) (y : Mill) -> not( x.millPos = y.millPos )) newMillList.[i]) newMillList
-        check 0 currMill
+                    match (List.tryFind ((fun (x : Mill) y -> x.millPos = y.millPos) allMills.[i]) newMillList) with        // Check if a mill has been broken
+                    | None -> check (i + 1) newMillList                                                                     // Mill didn't exist, carry on
+                    | _ -> check (i + 1) (List.filter ((fun (x : Mill) y -> x.millPos = y.millPos) allMills.[i]) newMillList)   // Mill was broken, remove it from list
+        check 0 currMill  
     
+    let getPlayerMills (currentMills : Mill List) (playerID : int) (cows : Cow List)  =
+        List.filter (fun (x : Mill) ->  (((getCowID x.millPos.[0] cows), (getCowID x.millPos.[1] cows), (getCowID x.millPos.[2] cows)) = (playerID,playerID,playerID))) currentMills
+
+    let getOpponent playerID =
+        match playerID with
+        | 0 -> 1
+        | 1 -> 0
+        | _ -> failwith "Invalid player"
+
     // Check if chosen cow is in a mill
     let canKill (pos : int) (mills : Mill List) (player : int) (cows : Cow List) =
+        let playerMills = getPlayerMills mills player cows             // Get Player mills
+        let enemyMills = getPlayerMills mills (getOpponent player)  // Get enemy mills
         match (getCowAtPos pos cows).Id = player with   // Check if cow to kill is players own cow    //there's a bug here that throws an exception if you try kill a cow at an index where there is no cow
         | true -> false
         | _ ->
             let rec check i =   
-                match i < mills.Length with
+                match i <  playerMills.Length with       // If opponent has no mills, can kill any of their cows
                 | false -> true
                 | _ -> 
-                    match  List.exists ((=) pos) mills.[i].millPos with
+                    match  List.exists ((=) pos) playerMills.[i].millPos with   // Check if cow to kill is in a mill
                     | false -> check (i + 1)
-                    | _ -> true
-            match mills.Length = 0 with
+                    | _ -> false                    // Cow is in mill. Cannot kill it
+            match playerMills.Length = 0 with       // Start checking if cow is in mill
             | true -> false
             | _ -> check 0
         
@@ -190,22 +202,28 @@ module GameSession =
         updateCOWList cows pos emptyCow
 
     let isNewMill (mills : Mill List) =
-        let isNewMill (mill : Mill) = mill.isNew = true
-        List.exists isNewMill mills
+        let newMill (mill : Mill) = mill.isNew = true
+        List.exists newMill mills
+    
+    let getPlayerColour (playerID : int) =
+        match playerID with
+        | 0 -> 'b'
+        | 1 -> 'r'
+        | _ -> failwith "Invalid player"
+
 
     // Check for mill, let player kill cow if mill exists. Verification Needed
-    let checkMill (cows : Cow List) (mills : Mill list) (playerID : int) =
-        let currentMills = updateMills cows  playerID mills    
-        match currentMills.Length with
+    let checkMill (cows : Cow List) (mills : Mill list) (playerID : int) =    
+        match mills.Length with
         | 0 -> cows
         | _ -> 
-            match isNewMill currentMills with
+            match isNewMill mills with
             | false -> cows
             | _ ->
                 printfn "Chose cow to fill"
                 let rec tryKill () =
                     let cowToKill = getPos ()
-                    match canKill (cowToKill) currentMills playerID  cows with
+                    match canKill (cowToKill) mills playerID  cows with
                     | true -> killCow cowToKill cows                   
                     | _ ->
                         Console.Clear ()
@@ -234,9 +252,9 @@ module GameSession =
                     printfn "\n\nPlayer %d: Enter a cow position" (i%2 + 1)
                     let pos = getPos()
                     let newCow = {Position = pos; isFlyingCow = false; Id = i % 2 }
-                    let currMills = updateMills list (i % 2) currentMill
                     let newCowList = updateCOWList list pos newCow          //List before checking for mills and possibly killing cow
-                    let newCowList2 =  checkMill newCowList allMills (i%2)  //List after ^                             
+                    let currMills = updateMills newCowList (i % 2) currentMill
+                    let newCowList2 =  checkMill newCowList (getPlayerMills currMills (i % 2) newCowList) (i%2)  //List after ^                             
                     getCows (i + 1) newCowList2 currMills 
             getCows 0 cowList []    
         phaseOne (emptyList ())
