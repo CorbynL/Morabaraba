@@ -12,14 +12,12 @@ open System
 
 *)
 
-module GameSession =      
+    
+
+module GameSession =   
+  
  
     Console.ForegroundColor <- ConsoleColor.Green 
-
-    type State = {
-
-         playerTurn : int
-    }    
 
     type Cow = {
 
@@ -27,15 +25,79 @@ module GameSession =
         isFlyingCow : bool 
         Id : int
     }
-
     let emptyCow = {Position = -1; isFlyingCow = false; Id = -1}
 
-    type Player = {
+    // Positions a cow can move from at a position
+    let isValidMove (cow : Cow) (position : int) =
+        match cow.Position,position with
+        | (0,1) | (0,3) | (0,9)
+        | (1,0) | (1,2) | (1,4) 
+        | (2,1) | (2,5) | (2,14)
+        | (3,0) | (3,4) | (3,6) | (3,10) 
+        | (4,1) | (4,3) | (4,5) | (4,7) 
+        | (5,2) | (5,4) | (5,8) | (5,13)
+        | (6,3) | (6,7) | (6,11) 
+        | (7,4) | (7,6) | (7,8) 
+        | (8,5) | (8,7) | (8,12) 
+        | (9,0) | (9,10) | (9,21) 
+        | (10,3) | (10,9) | (10,11) | (10,18) 
+        | (11,6) | (11,10) | (11,15) 
+        | (12,8) | (12,13) | (12,17) 
+        | (13,5) | (13,12) | (13,14) | (13,20) 
+        | (14,2) | (14,13) | (14,23) 
+        | (15,11) | (15,16) | (15,18) 
+        | (16,15) | (16,17) | (16,19) 
+        | (17,12) | (17,16) | (17,20) 
+        | (18,10) | (18,15) | (18,19) | (18,21) 
+        | (19,16) | (19,18) | (19,20) | (19,22) 
+        | (20,13) | (20,17) | (20,19) | (20,23) 
+        | (21,9) | (21,18) | (21,22) 
+        | (22,19) | (22,21) | (22,23)
+        | (23,14) | (23,20) | (23,22) -> position
+        | _ -> -1 
+        
 
-        Id : int            // Player Id. Player 1 will be (int 1)
-        isWinner : bool     // Player has won      
-    }
- 
+    //Initialise cow list with empty cows                
+    let emptyList () =
+        List.init 24 (fun x -> emptyCow)
+
+    let getCowID pos (cows : Cow List) = 
+        cows.[pos].Id
+
+    let getCowAtPos (pos) (cows : Cow List) =
+        List.find (fun (x : Cow) -> pos = x.Position) cows
+
+    //Replace cow at a given position with a given cow
+    let updateCOWList (oldList: Cow List) (possition: int) (newCow: Cow) =
+            let rec updateList (newList:Cow List) a =
+                match a < 0 with
+                | true -> newList
+                | _ ->
+                    match a = possition with
+                    | true -> updateList (newCow::newList) (a-1)
+                    |_-> 
+                        updateList (oldList.[a]::newList) (a-1)
+            updateList [] (oldList.Length - 1)    
+    (*
+        let rec moveCow (cowList : Cow List) (playerID : int) =
+            printf "player %i, chose a cow to move" playerID
+            let input = int (Console.ReadLine ())
+            let isCowThere = (getCowAtPos input cowList).Id = -1
+            let input2 = 
+                match isCowThere with
+                | false -> printfn "Where do you want to move your cow?"
+                           int (Console.ReadLine ())
+                | _ -> printfn "Cannt move there"
+                       moveCow cowList playerID              
+                match (isValidMove (getCowAtPos input cowList) input2) with
+                | true -> updateCOWList cowList input2 {Position = input2; isFlyingCow = false; Id = playerID}
+                | false -> moveCow cowList input2
+                *)
+        
+    //Kill chosen cow and replace dead cow with empty cow
+    let killCow (pos : int) (cows : Cow List) =        
+        updateCOWList cows pos emptyCow
+
     let getChar (cow : Cow)=
         match cow.Id with
         | 0 -> 'r'
@@ -77,7 +139,7 @@ module GameSession =
         isNew : bool
     }
 
-    //All possible mill variations
+        //All possible mill variations
     let allMills = [
         { millPos =    0::1::2::[]; isFormed = false; isNew = false}; // A1, A4, A7
         { millPos =    3::4::5::[]; isFormed = false; isNew = false}; // B2, B4, B6
@@ -101,13 +163,20 @@ module GameSession =
         { millPos = 17::20::23::[]; isFormed = false; isNew = false}; // E5, F6, G7
     ]
 
+    let removeBrokenMill (millList : Mill List) (pos : int) =
+        List.filter ((fun (x : Mill) y -> not (x.millPos = y.millPos)) allMills.[pos]) millList
+
+    // Does this player own this mill?
+    let isOwned (playerID : int) (idx : int) (cows : Cow List) =
+        (getCowID allMills.[idx].millPos.[0] cows, getCowID allMills.[idx].millPos.[1] cows, getCowID allMills.[idx].millPos.[2] cows ) = (playerID,playerID,playerID)
+
+    let getPlayerMills (currentMills : Mill List) (playerID : int) (cows : Cow List)  =
+        List.filter (fun (x : Mill) ->  (((getCowID x.millPos.[0] cows), (getCowID x.millPos.[1] cows), (getCowID x.millPos.[2] cows)) = (playerID,playerID,playerID))) currentMills
+
     //get ID of cow at given position
-    let getCowID pos (cows : Cow List) = 
-        cows.[pos].Id
 
     //Get cow at given position
-    let getCowAtPos (pos) (cows : Cow List) =
-        List.find (fun (x : Cow) -> pos = x.Position) cows
+
  
     // Replace a mill at given position with newMill
     let updateMillList (oldList: Mill List) (position: int) (newMill: Mill) : Mill List =
@@ -132,12 +201,7 @@ module GameSession =
         find 0
 
     // If mill no longer exists, remove it from the list
-    let removeBrokenMill (millList : Mill List) (pos : int) =
-        List.filter ((fun (x : Mill) y -> not (x.millPos = y.millPos)) allMills.[pos]) millList
 
-    // Does this player own this mill?
-    let isOwned (playerID : int) (idx : int) (cows : Cow List) =
-        (getCowID allMills.[idx].millPos.[0] cows, getCowID allMills.[idx].millPos.[1] cows, getCowID allMills.[idx].millPos.[2] cows ) = (playerID,playerID,playerID)
 
     //Get all current mills a player currently owns
     let updateMills (cows : Cow List)  (playerID : int) (currMill : Mill List) : Mill List =
@@ -157,8 +221,7 @@ module GameSession =
                     | _ -> check (i + 1) (removeBrokenMill newMillList i)   // Mill was broken, remove it from list
         check 0 currMill  
     
-    let getPlayerMills (currentMills : Mill List) (playerID : int) (cows : Cow List)  =
-        List.filter (fun (x : Mill) ->  (((getCowID x.millPos.[0] cows), (getCowID x.millPos.[1] cows), (getCowID x.millPos.[2] cows)) = (playerID,playerID,playerID))) currentMills
+    
         
     let getOpponent playerID =
         match playerID with
@@ -194,22 +257,6 @@ module GameSession =
                 printfn "Incorrect possition, please enter a new one:"
                 getPos ()
     
-    //Replace cow at a given position with a given cow
-    let updateCOWList (oldList: Cow List) (possition: int) (newCow: Cow) =
-            let rec updateList (newList:Cow List) a =
-                match a < 0 with
-                | true -> newList
-                | _ ->
-                    match a = possition with
-                    | true -> updateList (newCow::newList) (a-1)
-                    |_-> 
-                        updateList (oldList.[a]::newList) (a-1)
-            updateList [] (oldList.Length - 1)
-
-    
-    //Kill chosen cow and replace dead cow with empty cow
-    let killCow (pos : int) (cows : Cow List) =        
-        updateCOWList cows pos emptyCow
     
     // Checks if given mill was created on the players current turn
     let isNewMill (mills : Mill List) =
@@ -244,9 +291,48 @@ module GameSession =
                         tryKill ()
                 tryKill () 
             
-    //Initialise cow list with empty cows                
-    let emptyList () =
-        List.init 24 (fun x -> {Position = -1; isFlyingCow = false; Id = -1 })
+    let Move (cowList : Cow List) (playerID : int) =
+        let rec getMove () =
+            printfn "Which cow do you want to move?"
+            match getpos () with
+            | -1 -> 
+                printfn "Invalid position chosen."
+                getMove ()
+            | position ->                  
+                match playerID = (getCowAtPos( position cowList )).Id with
+                | true -> position
+                | _ -> 
+                    printfn "The position you chose is either empty or not your cow."
+                    getMove()
+        
+        let rec checkMove (position : int) =            
+            printfn "Where do you want to move this cow?"
+            match getPos () with
+            | -1 ->
+                printfn "Invalid position chosen."
+                checkMove (position)
+            | newPosition ->
+                match isValidMove (getCowAtPos ( position cowList )) (newPosition) with
+                | -1 -> 
+                    printfn "Invalid move choice for given cow."
+                    checkMove(position)
+                | _ -> 
+                    match (getCowAtPos (newPosition cowlist)).Id with
+                    | -1 -> position, newPosition
+                    | _ -> checkMove (position)
+
+        //Phase 2: Update the cowlist
+        //Remove cow at old position
+        //Add cow at new position
+        
+        
+            
+
+        match getMove () |> checkMove |> checkPosition with
+        | -1 -> Move cowList playerID
+        | position -> 
+        
+    
     
     //Start game loop
     let Start =                       
@@ -270,11 +356,11 @@ module GameSession =
                     getCows (i + 1) newCowList2 currMills 
             getCows 0 cowList []    
         phaseOne (emptyList ())
-
-    
+   
 [<EntryPoint>]
 
+
 let main argv = 
-    let x = GameSession.Start
+    let x = Start
     printfn "%A" argv
     0 // return an integer exit code
