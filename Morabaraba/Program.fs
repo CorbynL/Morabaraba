@@ -23,8 +23,9 @@ type Cow = {
     Position : int 
     isFlyingCow : bool 
     Id : int
-}
-let emptyCow = {Position = -1; isFlyingCow = false; Id = -1}
+    cowNumber : int
+}   
+let emptyCow = {Position = -1; isFlyingCow = false; Id = -1 ; cowNumber = -1}
 
 // Positions a cow can move from at a position
 let isValidMove (cow : Cow) (position : int) =
@@ -38,7 +39,7 @@ let isValidMove (cow : Cow) (position : int) =
     | (6,3) | (6,7) | (6,11) 
     | (7,4) | (7,6) | (7,8) 
     | (8,5) | (8,7) | (8,12) 
-    | (9,0) | (9,10) | (9,21) 
+    | (9,0) | (9,10)| (9,21) 
     | (10,3) | (10,9) | (10,11) | (10,18) 
     | (11,6) | (11,10) | (11,15) 
     | (12,8) | (12,13) | (12,17) 
@@ -96,7 +97,7 @@ let updateCOWList (oldList: Cow List) (possition: int) (newCow: Cow) =
         
 //Kill chosen cow and replace dead cow with empty cow
 let killCow (pos : int) (cows : Cow List) =        
-    updateCOWList cows pos emptyCow
+    updateCOWList cows pos {emptyCow with Position=pos}
 
 let getChar (cow : Cow)=
     match cow.Id with
@@ -135,32 +136,33 @@ let drawBoard (list : Cow List)  =  // print the board
 type Mill = {
 
     millPos : int List
-    isFormed : bool
     isNew : bool
+    previousForms :  ((int List) * int) List
+    owner : int
 }
 
     //All possible mill variations
 let allMills = [
-    { millPos =    0::1::2::[]; isFormed = false; isNew = false}; // A1, A4, A7
-    { millPos =    3::4::5::[]; isFormed = false; isNew = false}; // B2, B4, B6
-    { millPos =    6::7::8::[]; isFormed = false; isNew = false}; // C3, C4, C5
-    { millPos =  9::10::11::[]; isFormed = false; isNew = false}; // D1, D2, D3
-    { millPos = 12::13::14::[]; isFormed = false; isNew = false}; // D5, D6, D7
-    { millPos = 15::16::17::[]; isFormed = false; isNew = false}; // E3, E4, E5
-    { millPos = 18::19::20::[]; isFormed = false; isNew = false}; // F2, F4, F6
-    { millPos = 21::22::23::[]; isFormed = false; isNew = false}; // G1, G4, G7
-    { millPos =   0::9::21::[]; isFormed = false; isNew = false}; // A1, D1, G1
-    { millPos =  3::10::18::[]; isFormed = false; isNew = false}; // B2, D2, F2
-    { millPos =  6::11::15::[]; isFormed = false; isNew = false}; // C3, D3, E3
-    { millPos =    1::4::7::[]; isFormed = false; isNew = false}; // A4, B4, C4
-    { millPos = 16::19::22::[]; isFormed = false; isNew = false}; // E4, F4, G4
-    { millPos =  8::12::17::[]; isFormed = false; isNew = false}; // C5, D5, E5
-    { millPos =  5::13::20::[]; isFormed = false; isNew = false}; // B6, D6, F6
-    { millPos =  2::14::23::[]; isFormed = false; isNew = false}; // A7, D7, G7
-    { millPos =    0::3::6::[]; isFormed = false; isNew = false}; // A1, B2, C3
-    { millPos = 15::18::21::[]; isFormed = false; isNew = false}; // E3, F2, G1
-    { millPos =    2::5::8::[]; isFormed = false; isNew = false}; // C5, B6, A7
-    { millPos = 17::20::23::[]; isFormed = false; isNew = false}; // E5, F6, G7
+    { millPos =    3::4::5::[]; isNew = false; previousForms = [[],0]; owner = -1} // B2, B4, B6
+    { millPos =    0::1::2::[]; isNew = false; previousForms = [[],0]; owner = -1} // A1, A4, A7
+    { millPos =    6::7::8::[]; isNew = false; previousForms = [[],0]; owner = -1} // C3, C4, C5
+    { millPos =  9::10::11::[]; isNew = false; previousForms = [[],0]; owner = -1} // D1, D2, D3
+    { millPos = 12::13::14::[]; isNew = false; previousForms = [[],0]; owner = -1} // D5, D6, D7
+    { millPos = 15::16::17::[]; isNew = false; previousForms = [[],0]; owner = -1} // E3, E4, E5
+    { millPos = 18::19::20::[]; isNew = false; previousForms = [[],0]; owner = -1} // F2, F4, F6
+    { millPos = 21::22::23::[]; isNew = false; previousForms = [[],0]; owner = -1} // G1, G4, G7
+    { millPos =   0::9::21::[]; isNew = false; previousForms = [[],0]; owner = -1} // A1, D1, G1
+    { millPos =  3::10::18::[]; isNew = false; previousForms = [[],0]; owner = -1} // B2, D2, F2
+    { millPos =  6::11::15::[]; isNew = false; previousForms = [[],0]; owner = -1} // C3, D3, E3
+    { millPos =    1::4::7::[]; isNew = false; previousForms = [[],0]; owner = -1} // A4, B4, C4
+    { millPos = 16::19::22::[]; isNew = false; previousForms = [[],0]; owner = -1} // E4, F4, G4
+    { millPos =  8::12::17::[]; isNew = false; previousForms = [[],0]; owner = -1} // C5, D5, E5
+    { millPos =  5::13::20::[]; isNew = false; previousForms = [[],0]; owner = -1} // B6, D6, F6
+    { millPos =  2::14::23::[]; isNew = false; previousForms = [[],0]; owner = -1} // A7, D7, G7
+    { millPos =    0::3::6::[]; isNew = false; previousForms = [[],0]; owner = -1} // A1, B2, C3
+    { millPos = 15::18::21::[]; isNew = false; previousForms = [[],0]; owner = -1} // E3, F2, G1
+    { millPos =    2::5::8::[]; isNew = false; previousForms = [[],0]; owner = -1} // C5, B6, A7
+    { millPos = 17::20::23::[]; isNew = false; previousForms = [[],0]; owner = -1} // E5, F6, G7
 ]
 
 let removeBrokenMill (millList : Mill List) (pos : int) =
@@ -202,26 +204,55 @@ let getCurrentMillPos (millList : Mill List) (mill: Mill) =
 
 // If mill no longer exists, remove it from the list
 
+let rec getMillForms (prevMills : (int List * int) List) =
+    List.map (fun (nums,counter) -> nums) prevMills
 
-//Get all current mills a player currently owns
+let rec updateCounters  (list : ((int List)*int) List) =
+    List.map (fun (nums,counter) -> nums,counter-1) list
+
+// Dear, Yusuf. RUN WHILE YOU STILL CAN!
+//Update mill list
 let updateMills (cows : Cow List)  (playerID : int) (currMill : Mill List) : Mill List =
     let rec check (i : int) newMillList =
         match i < allMills.Length with
         | false -> newMillList
-        | _ ->  
-            match isOwned playerID i cows with        // Does this particular mill exist on the board (for playerID)?
-            | true -> 
-                match List.exists ((fun (x : Mill) (y : Mill) -> x.millPos = y.millPos) allMills.[i]) newMillList with      // Is the mill currently in our list?    
-                | false -> check (i + 1) ({millPos = allMills.[i].millPos; isFormed = true; isNew = true} :: newMillList)
-                // Can optimise
-                | _ -> check (i + 1) (updateMillList newMillList (getCurrentMillPos newMillList allMills.[i])  {allMills.[i] with isNew = false; isFormed = true}) // Mill is in current Mills, therfore is no longer new
-            | _ -> 
-                match (List.tryFind ((fun (x : Mill) y -> x.millPos = y.millPos && isOwned playerID i cows) allMills.[i]) newMillList) with        // Check if a mill has been broken
-                | None -> check (i + 1) newMillList                                                                     // Mill didn't exist, carry on
-                | _ -> check (i + 1) (removeBrokenMill newMillList i)   // Mill was broken, remove it from list
-    check 0 currMill  
-    
-    
+        | _ ->
+            // Defining data here for function readability
+            let cow1,cow2,cow3 = (getCowAtPos allMills.[i].millPos.[0] cows),(getCowAtPos allMills.[i].millPos.[1] cows),(getCowAtPos allMills.[i].millPos.[2] cows)
+            let cowNumberList = [cow1.cowNumber;cow2.cowNumber;cow3.cowNumber]
+            // Does this particular mill exist on the board (for playerID)?
+            match isOwned playerID i cows with
+            // Yes. The mill currently exists on the board
+            | true ->
+                // Is the mill currently in our list? 
+                match List.tryFind ((fun (x : Mill) (y : Mill) -> x.millPos = y.millPos) allMills.[i]) newMillList with
+                // No. Add new mill to list
+                | None ->                       
+                        check (i + 1) ({millPos = allMills.[i].millPos; isNew = true; previousForms = [cowNumberList,2]; owner = playerID} :: newMillList)
+                // Yes. Is it unique?
+                | Some {millPos = a; isNew = b; previousForms = prevMill} ->
+                         match prevMill with
+                         | list -> 
+                            match List.tryFind ((fun x y -> x = y) cowNumberList) (getMillForms prevMill ) with
+                            // It is not unique, mill has been formed twice in the past two terms with different cows
+                            | None -> check (i + 1) (updateMillList currMill (getCurrentMillPos currMill allMills.[i]) {millPos = a; isNew = false ;previousForms = (cowNumberList,2)::prevMill; owner = playerID})
+                            // The same mill has been formed with the same cows within two turns. Reset counter to 2
+                            | _ -> check (i + 1) (updateMillList currMill (getCurrentMillPos currMill allMills.[i]) {millPos = a; isNew = false ;previousForms = [cowNumberList,2]; owner = playerID})
+                         | _ -> failwith "Dear Satan. Why hath thou forsaken thine loyal follower? :("
+            // No. This mill does not exist on the board
+            | _   ->
+                // Has a mill has been broken?
+                match (List.tryFind ((fun (x : Mill) y -> (x.millPos = y.millPos) && (y.owner = playerID)) allMills.[i]) newMillList) with
+                // Mill didn't exist, carry on
+                | None -> check (i + 1) newMillList 
+                // Mill did exist, update counters
+                //
+                //TODO: Remove mill if counter = 0 (mill has been unformed fro two turns and can be formed again)
+                //
+
+                | Some {millPos = a; isNew = b; previousForms = prevMill} -> check (i + 1) (updateMillList currMill (getCurrentMillPos currMill allMills.[i]) {millPos = a; isNew = false ;previousForms = (updateCounters prevMill); owner = playerID})
+    check 0 currMill
+
         
 let getOpponent playerID =
     match playerID with
@@ -310,12 +341,14 @@ let rec checkMove (position : int) (cowList : Cow List) =
     printfn "Where do you want to move this cow?"
     match getPos () with
     | -1 ->
+        drawBoard cowList
         printfn "Invalid position chosen."
         checkMove position cowList
     | newPosition ->
         let cow = getCowAtPos  position cowList 
         match isValidMove cow newPosition with
         | -1 -> 
+            drawBoard cowList
             printfn "Invalid move choice for given cow."
             checkMove position cowList
         | _ -> 
@@ -330,8 +363,8 @@ let rec phase2 (cowList : Cow List) (playerID : int) (mills : Mill List)=
         drawBoard cowList
         let cowToMove = getMove cowList playerID
         let cowToMove, placeToMove = checkMove cowToMove cowList // WOW!!! tuple pattern!!!!!!!
-        let cowMoved = updateCOWList cowList placeToMove {Position = placeToMove; isFlyingCow = false; Id = playerID} // Move our cow to this position
-        let newCowList = updateCOWList cowMoved cowToMove emptyCow   // Replace cow at position with empty cow
+        let cowMoved = updateCOWList cowList placeToMove {getCowAtPos cowToMove cowList with Position = placeToMove } // Move our cow to this position
+        let newCowList = updateCOWList cowMoved cowToMove {emptyCow with Position = cowToMove}   // Replace cow at position with empty cow
         let newMills = updateMills newCowList playerID mills
         let newNewCowList = checkMill newCowList newMills playerID
         phase2 newNewCowList (playerID % 2) newMills
@@ -358,7 +391,7 @@ let Start () =
                 drawBoard list                                                      //When a mill is formed, it only draws the cow that formed the mill, after you kill a cow
                 printfn "\n\nPlayer %d: Enter a cow position" (i%2 + 1)
                 let pos = getPos()
-                let newCow = {Position = pos; isFlyingCow = false; Id = i % 2 }
+                let newCow = {Position = pos; isFlyingCow = false; Id = i % 2; cowNumber = i }
                 let newCowList = updateCOWList list pos newCow          //List before checking for mills and possibly killing cow
                 let currMills = updateMills newCowList (i % 2) currentMill
                 let newCowList2 =  checkMill newCowList currMills (i%2)  //List after ^
