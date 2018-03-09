@@ -361,7 +361,7 @@ let rec phase2 (cowList : Cow List) (playerID : int) (mills : Mill List)=
         let newCowList = updateCOWList cowMoved cowToMove {emptyCow with Position = cowToMove}   // Replace cow at position with empty cow
         let newMills = updateMills newCowList playerID mills
         let newNewCowList = checkMill newCowList newMills playerID
-        phase2 newNewCowList (playerID % 2) newMills
+        phase2 newNewCowList (getOpponent playerID) newMills
     | _ -> failwith "asdasdfdsfg"
 
 
