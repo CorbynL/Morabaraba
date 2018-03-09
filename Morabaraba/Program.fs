@@ -330,39 +330,52 @@ let rec getMove (cowList : Cow List) (playerID : int) =
             printfn "The position you chose is either empty or not your cow."
             getMove cowList playerID
 
+let getPlayerCowLength (cowList : Cow List) (playerID : int) =
+    List.fold (fun initial (cow : Cow) -> 
+        match cow.Id = playerID with
+        | true -> initial + 1
+        | _ -> initial) 0 cowList
     
-let rec checkMove (position : int) (cowList : Cow List) =            
+let rec checkMove (position : int) (cowList : Cow List) (playerID : int) =
+    let numberOfCows = getPlayerCowLength cowList playerID
     printfn "Where do you want to move this cow?"
     match getPos () with
     | -1 ->
         drawBoard cowList
         printfn "Invalid position chosen."
-        checkMove position cowList
+        checkMove position cowList playerID
     | newPosition ->
-        let cow = getCowAtPos  position cowList 
-        match isValidMove cow newPosition with
+        let cow = getCowAtPos  position cowList
+        let isValid = 
+            match numberOfCows < 4 with
+            | true -> newPosition
+            | _ -> isValidMove cow newPosition
+        match isValid with
         | -1 -> 
             drawBoard cowList
             printfn "Invalid move choice for given cow."
-            checkMove position cowList
+            checkMove position cowList playerID
         | _ -> 
             match (getCowAtPos newPosition cowList).Id with
             | -1 -> position, newPosition
-            | _ -> checkMove position cowList
+            | _ -> checkMove position cowList playerID
+
+
             
 let rec phase2 (cowList : Cow List) (playerID : int) (mills : Mill List)=
-    match true with
+    match (getPlayerCowLength cowList playerID) > 2 with
     | true ->
         Console.Clear ()
         drawBoard cowList
         let cowToMove = getMove cowList playerID
-        let cowToMove, placeToMove = checkMove cowToMove cowList // WOW!!! tuple pattern!!!!!!!
+        let cowToMove, placeToMove = checkMove cowToMove cowList playerID // WOW!!! tuple pattern!!!!!!!
         let cowMoved = updateCOWList cowList placeToMove {getCowAtPos cowToMove cowList with Position = placeToMove } // Move our cow to this position
         let newCowList = updateCOWList cowMoved cowToMove {emptyCow with Position = cowToMove}   // Replace cow at position with empty cow
         let newMills = updateMills newCowList playerID mills
         let newNewCowList = checkMill newCowList newMills playerID
         phase2 newNewCowList (getOpponent playerID) newMills
-    | _ -> failwith "asdasdfdsfg"
+    | _ -> printfn "player %i wins!" (getOpponent playerID)
+           Console.ReadKey () 
 
 
 
