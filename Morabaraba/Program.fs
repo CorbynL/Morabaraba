@@ -27,7 +27,6 @@ Console.Title ="Morabaraba"
 //******************************************************************************************************************************
 
 
-
 type Cow = {
 
     Position : int 
@@ -49,6 +48,7 @@ type Mill = {
 
 let emptyCow = {Position = -1; isFlyingCow = false; Id = -1 ; cowNumber = -1}
 
+let consoleWidth = Console.WindowWidth
 
 //******************************************************************************************************************************
 //
@@ -56,46 +56,45 @@ let emptyCow = {Position = -1; isFlyingCow = false; Id = -1 ; cowNumber = -1}
 //
 //******************************************************************************************************************************
 
+let printCenterLine =
+    fun (line: string) -> 
+        Console.SetCursorPosition((consoleWidth - line.Length) / 2, Console.CursorTop)
+        Console.WriteLine (line)
+
+
 // Prompted when games starts
 let startUpPrompt () =      //Try find a shorter way of doing this at some point...
-    printfn "\t\t\t\t   *  "
-    printfn "\t\t\t\t (  `                       )                      )        "
-    printfn "\t\t\t\t )\))(        (       )  ( /(     )  (       )  ( /(     )  "
-    printfn "\t\t\t\t((_)()\   (   )(   ( /(  )\()) ( /(  )(   ( /(  )\()) ( /(  "
-    printfn "\t\t\t\t(_()((_)  )\ (()\  )(_))((_)\  )(_))(()\  )(_))((_)\  )(_)) "
-    printfn "\t\t\t\t|  \/  | ((_) ((_)((_)_ | |(_)((_)_  ((_)((_)_ | |(_)((_)_  "
-    printfn "\t\t\t\t| |\/| |/ _ \| '_|/ _` || '_ \/ _` || '_|/ _` || '_ \/ _` | "
-    printfn "\t\t\t\t|_|  |_|\___/|_|  \__,_||_.__/\__,_||_|  \__,_||_.__/\__,_| "
+    printCenterLine "   *                                                        "
+    printCenterLine " (  `                       )                      )        "
+    printCenterLine " )\))(        (       )  ( /(     )  (       )  ( /(     )  "
+    printCenterLine "((_)()\   (   )(   ( /(  )\()) ( /(  )(   ( /(  )\()) ( /(  "
+    printCenterLine "(_()((_)  )\ (()\  )(_))((_)\  )(_))(()\  )(_))((_)\  )(_)) "
+    printCenterLine "|  \/  | ((_) ((_)((_)_ | |(_)((_)_  ((_)((_)_ | |(_)((_)_  "
+    printCenterLine "| |\/| |/ _ \| '_|/ _` || '_ \/ _` || '_|/ _` || '_ \/ _` | "
+    printCenterLine "|_|  |_|\___/|_|  \__,_||_.__/\__,_||_|  \__,_||_.__/\__,_| "
 
     
     printfn "\n\n\n"
-    let consoleWidth = Console.WindowWidth
-    let line1 = " ------------------- Let the Games Begin! ------------------- "
-    Console.SetCursorPosition((consoleWidth - line1.Length) / 2, Console.CursorTop)
-    Console.WriteLine (line1)
+    printCenterLine " ------------------- Let the Games Begin! ------------------- "
     
     printfn "\n\n"
-    let line2 = " ---- [ Rules ] ---- "
-    Console.SetCursorPosition((consoleWidth - line2.Length) / 2, Console.CursorTop)
-    Console.WriteLine (line2)
+    printCenterLine " ---- [ Rules ] ---- "
+
     
     printfn ""
-    let line3 = "  -> Type in the coordinates of your cow"
-    Console.SetCursorPosition((consoleWidth - line3.Length) / 2, Console.CursorTop)
-    Console.WriteLine (line3)
+    printCenterLine "  -> Type in the coordinates of your cow"
 
     printfn "\n\n"
-    let line4 = " --- [ Press Enter to Begin ] --- "
-    Console.SetCursorPosition((consoleWidth - line4.Length) / 2, Console.CursorTop)
-    Console.WriteLine (line4)
+    printCenterLine" --- [ Press Enter to Begin ] --- "
 
-    //Console.SetCursorPosition(0,0)
     Console.ReadKey()
     Console.Clear()
 
 
+
 // Check to see if a valid input has been recieved
 let rec getPos ()=                             
+        Console.SetCursorPosition((consoleWidth) / 2, Console.CursorTop)
         let pos = 
             match (Console.ReadLine ()).ToLower() with
             | "a1" -> 0 | "a4" -> 1 | "a7" -> 2
@@ -109,7 +108,7 @@ let rec getPos ()=
         match pos = -1 with
         | false -> pos
         | _ -> 
-            printfn "Invalid possition, please enter a new one:"
+            printCenterLine "Invalid possition, please enter a new one:"
             getPos ()
     
 // Check to see if the position is blank and valid
@@ -118,7 +117,7 @@ let rec getBlankPos (boardState: Cow List)=
         match boardState.[pos].Id with
         | -1 -> pos
         | _-> 
-            printfn "Please Choose a position where there are no cows:"
+            printCenterLine "Please Choose a position where there are no cows:"
             boardState |> getBlankPos
 
 let getChar (cow : Cow)=
@@ -128,22 +127,25 @@ let getChar (cow : Cow)=
     | _ -> ' '
 
 let drawBoard (list : Cow List)  =  // print the board           
-        printfn "             1   2   3   4   5   6   7"
-        printfn ""
-        printfn "        A   (%c)---------(%c)---------(%c)" (getChar list.[0]) (getChar list.[1]) (getChar list.[2])
-        printfn "             | \         |         / |"
-        printfn "        B    |  (%c)-----(%c)-----(%c)  |" (getChar list.[3]) (getChar list.[4]) (getChar list.[5])
-        printfn "             |   | \     |     / |   |"
-        printfn "        C    |   |  (%c)-(%c)-(%c)  |   |" (getChar list.[6]) (getChar list.[7]) (getChar list.[8])
-        printfn "             |   |   |       |   |   |"
-        printfn "        D   (%c)-(%c)-(%c)     (%c)-(%c)-(%c)" (getChar list.[9]) (getChar list.[10]) (getChar list.[11]) (getChar list.[12]) (getChar list.[13]) (getChar list.[14])
-        printfn "             |   |   |       |   |   |"
-        printfn "        E    |   |  (%c)-(%c)-(%c)  |   |" (getChar list.[15]) (getChar list.[16]) (getChar list.[17])
-        printfn "             |   | /     |     \ |   |"
-        printfn "        F    |  (%c)-----(%c)-----(%c)  |" (getChar list.[18]) (getChar list.[19]) (getChar list.[20])
-        printfn "             | /         |         \ |"
-        printfn "        G   (%c)---------(%c)---------(%c)" (getChar list.[21]) (getChar list.[22]) (getChar list.[23])
+        let line = "                                       "
+        printfn "\n\n\n\n"
+        printCenterLine "     1   2   3   4   5   6   7"
+        printCenterLine ""
+        printCenterLine (String.Format(" A   ({0})---------({1})---------({2})    ", (getChar list.[0]), (getChar list.[1]), (getChar list.[2])))
+        printCenterLine "     | \         |         / |    "
+        printCenterLine (String.Format(" B    |  ({0})-----({1})-----({2})  |    ", (getChar list.[3]), (getChar list.[4]), (getChar list.[5])))
+        printCenterLine "     |   | \     |     / |   |    "
+        printCenterLine (String.Format(" C    |   |  ({0})-({1})-({2})  |   |    ", (getChar list.[6]), (getChar list.[7]), (getChar list.[8])))
+        printCenterLine "     |   |   |       |   |   |    "
+        printCenterLine (String.Format(" D   ({0})-({1})-({2})     ({3})-({4})-({5})    ", (getChar list.[9]), (getChar list.[10]), (getChar list.[11]), (getChar list.[12]), (getChar list.[13]), (getChar list.[14])))
+        printCenterLine "     |   |   |       |   |   |    "
+        printCenterLine (String.Format(" E    |   |  ({0})-({1})-({2})  |   |    ", (getChar list.[15]), (getChar list.[16]), (getChar list.[17])))
+        printCenterLine "     |   | /     |     \ |   |    "
+        printCenterLine (String.Format(" F    |  ({0})-----({1})-----({2})  |    ", (getChar list.[18]), (getChar list.[19]), (getChar list.[20])))
+        printCenterLine "     | /         |         \ |    "
+        printCenterLine (String.Format(" G   ({0})---------({1})---------({2})    ", (getChar list.[21]), (getChar list.[22]), (getChar list.[23])))
  
+
 
 
 //******************************************************************************************************************************
@@ -389,7 +391,7 @@ let checkMill (cows : Cow List) (mills : Mill list) (playerID : int) =
         | false -> cows
         | _ ->
             drawBoard cows
-            printfn "\n Chose cow to kill"
+            printCenterLine "Chose cow to kill"
             let rec tryKill () =
                 let cowToKill = getPos ()
                 match canKill (cowToKill) mills playerID cows with
@@ -397,22 +399,22 @@ let checkMill (cows : Cow List) (mills : Mill list) (playerID : int) =
                 | _ ->
                     Console.Clear ()
                     drawBoard cows
-                    printfn "Cannot kill that one, Please enter a new position"
+                    printCenterLine "Cannot kill that one, Please enter a new position"
                     tryKill ()
             tryKill () 
             
 let rec getMove (cowList : Cow List) (playerID : int) =
-    printfn "Which cow do you want to move?"
+    printCenterLine "Which cow do you want to move?"
     match getPos () with
     | -1 -> 
-        printfn "Invalid position chosen."
+        printCenterLine "Invalid position chosen."
         getMove cowList playerID
     | position ->
         let cow = getCowAtPos position cowList
         match playerID = cow.Id with
         | true -> position
         | _ -> 
-            printfn "The position you chose is either empty or not your cow."
+            printCenterLine "The position you chose is either empty or not your cow."
             getMove cowList playerID
 
 let getPlayerCowLength (cowList : Cow List) (playerID : int) =
@@ -423,11 +425,11 @@ let getPlayerCowLength (cowList : Cow List) (playerID : int) =
     
 let rec checkMove (position : int) (cowList : Cow List) (playerID : int) =
     let numberOfCows = getPlayerCowLength cowList playerID
-    printfn "Where do you want to move this cow?"
+    printCenterLine "Where do you want to move this cow?"
     match getPos () with
     | -1 ->
         drawBoard cowList
-        printfn "Invalid position chosen."
+        printCenterLine "Invalid position chosen."
         checkMove position cowList playerID
     | newPosition ->
         let cow = getCowAtPos  position cowList
@@ -439,7 +441,7 @@ let rec checkMove (position : int) (cowList : Cow List) (playerID : int) =
         | -1 -> 
             Console.Clear()
             drawBoard cowList
-            printfn "Invalid move choice for given cow."
+            printCenterLine "Invalid move choice for given cow."
             checkMove position cowList playerID
         | _ -> 
             match (getCowAtPos newPosition cowList).Id with
@@ -480,17 +482,21 @@ let Start () =
     startUpPrompt ()
     
     let phaseOne cowList =
-        let rec getCows i (BoardState : Cow List) (currentMill : Mill List) =
+        let rec getCows i (list : Cow List) (currentMill : Mill List) =
             match i = 24 with
-            | true -> BoardState, currentMill
+            | true -> list, currentMill
             | _ ->
                 Console.Clear()
-                drawBoard BoardState                                                      //When a mill is formed, it only draws the cow that formed the mill, after you kill a cow
-                printfn "\n\nPlayer %d: Enter a cow position" (i%2 + 1)
-                let pos = getBlankPos BoardState
+                match i%2=0 with
+                | true -> Console.ForegroundColor <- ConsoleColor.Red           // Still working on this one
+                | _ -> Console.ForegroundColor <- ConsoleColor.Cyan 
+                drawBoard list                                            // When a mill is formed, it only draws the cow that formed the mill, after you kill a cow
+                printfn "\n\n"
+                printCenterLine (String.Format("-----  [Player {0}: Enter a cow position]  -----", (i % 2 + 1)))   // Had to use formating for function to work properly
+                let pos = getBlankPos list
                 Console.Clear()
                 // List before checking for mills and possibly killing cow
-                let BoardUpdate = updateCOWList BoardState pos {Position = pos; isFlyingCow = false; Id = i % 2; cowNumber = i }  //List before checking for mills and possibly killing cow
+                let BoardUpdate = updateCOWList list pos {Position = pos; isFlyingCow = false; Id = i % 2; cowNumber = i }  // List before checking for mills and possibly killing cow
                 let currMills = updateMills BoardUpdate (i % 2) currentMill
                 let newCowList2 =  checkMill BoardUpdate currMills (i%2)  //List after ^
                 getCows (i + 1) newCowList2 currMills 
