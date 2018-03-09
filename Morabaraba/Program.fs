@@ -18,14 +18,129 @@ open System
  
 Console.ForegroundColor <- ConsoleColor.Green 
 
+//******************************************************************************************************************************
+//
+// -------------------------------------------------------- Data Structures ----------------------------------------------------
+//
+//******************************************************************************************************************************
+
+
+
 type Cow = {
 
     Position : int 
     isFlyingCow : bool 
     Id : int
     cowNumber : int
-}   
+}
+
+type GameBoard =
+| Board of Cow List
+
+type Mill = {
+
+    millPos : int List
+    isNew : bool
+    previousForms :  ((int List) * int) List
+    owner : int
+}
+
 let emptyCow = {Position = -1; isFlyingCow = false; Id = -1 ; cowNumber = -1}
+
+
+//******************************************************************************************************************************
+//
+// -------------------------------------------------------- User Interaction ---------------------------------------------------
+//
+//******************************************************************************************************************************
+
+// Prompted when games starts
+let startUpPrompt () =      //Try find a shorter way of doing this at some point...
+    printfn "\n\n\n"
+    let consoleWidth = Console.WindowWidth
+    let line1 = " ------------------- Let the Games Begin! ------------------- "
+    Console.SetCursorPosition((consoleWidth - line1.Length) / 2, Console.CursorTop)
+    Console.WriteLine (line1)
+    
+    printfn "\n\n"
+    let line2 = " ---- [ Controls ] ---- "
+    Console.SetCursorPosition((consoleWidth - line2.Length) / 2, Console.CursorTop)
+    Console.WriteLine (line2)
+    
+    printfn "\n\n"
+    let line3 = "  -> Type in the coordinates of your cow"
+    Console.SetCursorPosition((consoleWidth - line3.Length) / 2, Console.CursorTop)
+    Console.WriteLine (line3)
+
+    printfn "\n\n"
+    let line4 = " --- [ Press Enter to Begin ] --- "
+    Console.SetCursorPosition((consoleWidth - line4.Length) / 2, Console.CursorTop)
+    Console.WriteLine (line4)
+
+    //Console.SetCursorPosition(0,0)
+    Console.ReadKey()
+    Console.Clear()
+
+
+// Check to see if a valid input has been recieved
+let rec getPos ()=                             
+        let pos = 
+            match (Console.ReadLine ()).ToLower() with
+            | "a1" -> 0 | "a4" -> 1 | "a7" -> 2
+            | "b2" -> 3 | "b4" -> 4 | "b6" -> 5
+            | "c3" -> 6 | "c4" -> 7 | "c5" -> 8
+            | "d1" -> 9 | "d2" -> 10| "d3" -> 11| "d5" -> 12| "d6" -> 13| "d7" -> 14
+            | "e3" -> 15| "e4" -> 16| "e5" -> 17
+            | "f2" -> 18| "f4" -> 19| "f6" -> 20
+            | "g1" -> 21| "g4" -> 22| "g7" -> 23
+            | "help"
+            | _ -> -1  
+        match pos = -1 with
+        | false -> pos
+        | _ -> 
+            printfn "Invalid possition, please enter a new one:"
+            getPos ()
+    
+// Check to see if the position is blank and valid
+let rec getBlankPos (boardState: Cow List)=                             
+        let pos = getPos()
+        match boardState.[pos].Id with
+        | -1 -> pos
+        | _-> 
+            printfn "Please Choose a position where there are no cows:"
+            boardState |> getBlankPos
+
+let getChar (cow : Cow)=
+    match cow.Id with
+    | 0 -> 'r'
+    | 1 -> 'b'
+    | _ -> ' '
+
+let drawBoard (list : Cow List)  =  // print the board           
+        printfn "             1   2   3   4   5   6   7"
+        printfn ""
+        printfn "        A   (%c)---------(%c)---------(%c)" (getChar list.[0]) (getChar list.[1]) (getChar list.[2])
+        printfn "             | \         |         / |"
+        printfn "        B    |  (%c)-----(%c)-----(%c)  |" (getChar list.[3]) (getChar list.[4]) (getChar list.[5])
+        printfn "             |   | \     |     / |   |"
+        printfn "        C    |   |  (%c)-(%c)-(%c)  |   |" (getChar list.[6]) (getChar list.[7]) (getChar list.[8])
+        printfn "             |   |   |       |   |   |"
+        printfn "        D   (%c)-(%c)-(%c)     (%c)-(%c)-(%c)" (getChar list.[9]) (getChar list.[10]) (getChar list.[11]) (getChar list.[12]) (getChar list.[13]) (getChar list.[14])
+        printfn "             |   |   |       |   |   |"
+        printfn "        E    |   |  (%c)-(%c)-(%c)  |   |" (getChar list.[15]) (getChar list.[16]) (getChar list.[17])
+        printfn "             |   | /     |     \ |   |"
+        printfn "        F    |  (%c)-----(%c)-----(%c)  |" (getChar list.[18]) (getChar list.[19]) (getChar list.[20])
+        printfn "             | /         |         \ |"
+        printfn "        G   (%c)---------(%c)---------(%c)" (getChar list.[21]) (getChar list.[22]) (getChar list.[23])
+ 
+
+
+//******************************************************************************************************************************
+//
+// -------------------------------------------------------- State Checking -----------------------------------------------------
+//
+//******************************************************************************************************************************    
+
 
 // Positions a cow can move from at a position
 let isValidMove (cow : Cow) (position : int) =
@@ -57,6 +172,30 @@ let isValidMove (cow : Cow) (position : int) =
     | _ -> -1 
         
 
+    //All possible mill variations
+let allMills = [
+    { millPos =    3::4::5::[]; isNew = false; previousForms = [[],0]; owner = -1} // B2, B4, B6
+    { millPos =    0::1::2::[]; isNew = false; previousForms = [[],0]; owner = -1} // A1, A4, A7
+    { millPos =    6::7::8::[]; isNew = false; previousForms = [[],0]; owner = -1} // C3, C4, C5
+    { millPos =  9::10::11::[]; isNew = false; previousForms = [[],0]; owner = -1} // D1, D2, D3
+    { millPos = 12::13::14::[]; isNew = false; previousForms = [[],0]; owner = -1} // D5, D6, D7
+    { millPos = 15::16::17::[]; isNew = false; previousForms = [[],0]; owner = -1} // E3, E4, E5
+    { millPos = 18::19::20::[]; isNew = false; previousForms = [[],0]; owner = -1} // F2, F4, F6
+    { millPos = 21::22::23::[]; isNew = false; previousForms = [[],0]; owner = -1} // G1, G4, G7
+    { millPos =   0::9::21::[]; isNew = false; previousForms = [[],0]; owner = -1} // A1, D1, G1
+    { millPos =  3::10::18::[]; isNew = false; previousForms = [[],0]; owner = -1} // B2, D2, F2
+    { millPos =  6::11::15::[]; isNew = false; previousForms = [[],0]; owner = -1} // C3, D3, E3
+    { millPos =    1::4::7::[]; isNew = false; previousForms = [[],0]; owner = -1} // A4, B4, C4
+    { millPos = 16::19::22::[]; isNew = false; previousForms = [[],0]; owner = -1} // E4, F4, G4
+    { millPos =  8::12::17::[]; isNew = false; previousForms = [[],0]; owner = -1} // C5, D5, E5
+    { millPos =  5::13::20::[]; isNew = false; previousForms = [[],0]; owner = -1} // B6, D6, F6
+    { millPos =  2::14::23::[]; isNew = false; previousForms = [[],0]; owner = -1} // A7, D7, G7
+    { millPos =    0::3::6::[]; isNew = false; previousForms = [[],0]; owner = -1} // A1, B2, C3
+    { millPos = 15::18::21::[]; isNew = false; previousForms = [[],0]; owner = -1} // E3, F2, G1
+    { millPos =    2::5::8::[]; isNew = false; previousForms = [[],0]; owner = -1} // C5, B6, A7
+    { millPos = 17::20::23::[]; isNew = false; previousForms = [[],0]; owner = -1} // E5, F6, G7
+]
+
 //Initialise cow list with empty cows                
 let emptyList () =
     let list = List.init 24 (fun x -> emptyCow)
@@ -84,71 +223,12 @@ let updateCOWList (oldList: Cow List) (possition: int) (newCow: Cow) =
 let killCow (pos : int) (cows : Cow List) =        
     updateCOWList cows pos {emptyCow with Position=pos}
 
-let getChar (cow : Cow)=
-    match cow.Id with
-    | 0 -> 'r'
-    | 1 -> 'b'
-    | _ -> ' '
 
-let translatePos (posInput : string)  =
-    match posInput.ToLower() with
-    | "a1" -> 0 | "a4" -> 1 | "a7" -> 2
-    | "b2" -> 3 | "b4" -> 4 | "b6" -> 5
-    | "c3" -> 6 | "c4" -> 7 | "c5" -> 8
-    | "d1" -> 9 | "d2" -> 10| "d3" -> 11| "d5" -> 12| "d6" -> 13| "d7" -> 14
-    | "e3" -> 15| "e4" -> 16| "e5" -> 17
-    | "f2" -> 18| "f4" -> 19| "f6" -> 20
-    | "g1" -> 21| "g4" -> 22| "g7" -> 23
-    | _ -> -1        
-
-let drawBoard (list : Cow List)  =  // print the board           
-        printfn "             1   2   3   4   5   6   7"
-        printfn ""
-        printfn "        A   (%c)---------(%c)---------(%c)" (getChar list.[0]) (getChar list.[1]) (getChar list.[2])
-        printfn "             | \         |         / |"
-        printfn "        B    |  (%c)-----(%c)-----(%c)  |" (getChar list.[3]) (getChar list.[4]) (getChar list.[5])
-        printfn "             |   | \     |     / |   |"
-        printfn "        C    |   |  (%c)-(%c)-(%c)  |   |" (getChar list.[6]) (getChar list.[7]) (getChar list.[8])
-        printfn "             |   |   |       |   |   |"
-        printfn "        D   (%c)-(%c)-(%c)     (%c)-(%c)-(%c)" (getChar list.[9]) (getChar list.[10]) (getChar list.[11]) (getChar list.[12]) (getChar list.[13]) (getChar list.[14])
-        printfn "             |   |   |       |   |   |"
-        printfn "        E    |   |  (%c)-(%c)-(%c)  |   |" (getChar list.[15]) (getChar list.[16]) (getChar list.[17])
-        printfn "             |   | /     |     \ |   |"
-        printfn "        F    |  (%c)-----(%c)-----(%c)  |" (getChar list.[18]) (getChar list.[19]) (getChar list.[20])
-        printfn "             | /         |         \ |"
-        printfn "        G   (%c)---------(%c)---------(%c)" (getChar list.[21]) (getChar list.[22]) (getChar list.[23])
     
-type Mill = {
 
-    millPos : int List
-    isNew : bool
-    previousForms :  ((int List) * int) List
-    owner : int
-}
+   
 
-    //All possible mill variations
-let allMills = [
-    { millPos =    3::4::5::[]; isNew = false; previousForms = [[],0]; owner = -1} // B2, B4, B6
-    { millPos =    0::1::2::[]; isNew = false; previousForms = [[],0]; owner = -1} // A1, A4, A7
-    { millPos =    6::7::8::[]; isNew = false; previousForms = [[],0]; owner = -1} // C3, C4, C5
-    { millPos =  9::10::11::[]; isNew = false; previousForms = [[],0]; owner = -1} // D1, D2, D3
-    { millPos = 12::13::14::[]; isNew = false; previousForms = [[],0]; owner = -1} // D5, D6, D7
-    { millPos = 15::16::17::[]; isNew = false; previousForms = [[],0]; owner = -1} // E3, E4, E5
-    { millPos = 18::19::20::[]; isNew = false; previousForms = [[],0]; owner = -1} // F2, F4, F6
-    { millPos = 21::22::23::[]; isNew = false; previousForms = [[],0]; owner = -1} // G1, G4, G7
-    { millPos =   0::9::21::[]; isNew = false; previousForms = [[],0]; owner = -1} // A1, D1, G1
-    { millPos =  3::10::18::[]; isNew = false; previousForms = [[],0]; owner = -1} // B2, D2, F2
-    { millPos =  6::11::15::[]; isNew = false; previousForms = [[],0]; owner = -1} // C3, D3, E3
-    { millPos =    1::4::7::[]; isNew = false; previousForms = [[],0]; owner = -1} // A4, B4, C4
-    { millPos = 16::19::22::[]; isNew = false; previousForms = [[],0]; owner = -1} // E4, F4, G4
-    { millPos =  8::12::17::[]; isNew = false; previousForms = [[],0]; owner = -1} // C5, D5, E5
-    { millPos =  5::13::20::[]; isNew = false; previousForms = [[],0]; owner = -1} // B6, D6, F6
-    { millPos =  2::14::23::[]; isNew = false; previousForms = [[],0]; owner = -1} // A7, D7, G7
-    { millPos =    0::3::6::[]; isNew = false; previousForms = [[],0]; owner = -1} // A1, B2, C3
-    { millPos = 15::18::21::[]; isNew = false; previousForms = [[],0]; owner = -1} // E3, F2, G1
-    { millPos =    2::5::8::[]; isNew = false; previousForms = [[],0]; owner = -1} // C5, B6, A7
-    { millPos = 17::20::23::[]; isNew = false; previousForms = [[],0]; owner = -1} // E5, F6, G7
-]
+
 
 let removeBrokenMill (millList : Mill List) (mill : Mill) =
     List.filter ((fun (x : Mill) y -> not (x.millPos = y.millPos)) mill) millList
@@ -176,6 +256,7 @@ let updateMillList (oldList: Mill List) (position: int) (newMill: Mill) : Mill L
                 |_-> 
                     updateList (oldList.[a]::newList) (a-1)
         updateList [] (oldList.Length - 1)  
+
 
 let getMillPos (millList : Mill List) (mill: Mill) =
     let rec find i =
@@ -272,16 +353,9 @@ let canKill (pos : int) (mills : Mill List) (player : int) (cows : Cow List) =
         match playerMills.Length = 0 with                                 // Start checking if cow is in mill
         | true -> false
         | _ -> check 0
-        
-// Check to see if a valid input has been recieved
-let rec getPos ()=                             
-        let pos = (Console.ReadLine () |> translatePos)
-        match pos = -1 with
-        | false -> pos
-        | _ -> 
-            printfn "Incorrect possition, please enter a new one:"
-            getPos ()
-    
+ 
+
+
     
 // Checks if given mill was created on the players current turn
 let isNewMill (mills : Mill List) =
@@ -304,7 +378,7 @@ let checkMill (cows : Cow List) (mills : Mill list) (playerID : int) =
         match isNewMill playerMills with
         | false -> cows
         | _ ->
-            printfn "Chose cow to fill"
+            printfn "Chose cow to kill"
             let rec tryKill () =
                 let cowToKill = getPos ()
                 match canKill (cowToKill) mills playerID  cows with
@@ -384,29 +458,32 @@ let rec phase2 (cowList : Cow List) (playerID : int) (mills : Mill List)=
     //Add cow at new position 
     
 //Start game loop
-let Start () =                       
+let Start () =  
+    startUpPrompt ()
+    
     let phaseOne cowList =
-        let rec getCows i (list : Cow List) (currentMill : Mill List) =
+        let rec getCows i (BoardState : Cow List) (currentMill : Mill List) =
             match i = 24 with
-            | true -> list, currentMill
+            | true -> BoardState, currentMill
             | _ ->
-                //
-                // TO DO: Clean up method
-                //
-                Console.Clear()
-                printfn "\nPlace your cows: Player one will place first\n"
-                drawBoard list                                                      //When a mill is formed, it only draws the cow that formed the mill, after you kill a cow
+                drawBoard BoardState                                                      //When a mill is formed, it only draws the cow that formed the mill, after you kill a cow
                 printfn "\n\nPlayer %d: Enter a cow position" (i%2 + 1)
-                let pos = getPos()
-                let newCow = {Position = pos; isFlyingCow = false; Id = i % 2; cowNumber = i }
-                let newCowList = updateCOWList list pos newCow          //List before checking for mills and possibly killing cow
-                let currMills = updateMills newCowList (i % 2) currentMill
-                let newCowList2 =  checkMill newCowList currMills (i%2)  //List after ^
+                let pos = getBlankPos BoardState
+                Console.Clear()
+                // List before checking for mills and possibly killing cow
+                let BoardUpdate = updateCOWList BoardState pos {Position = pos; isFlyingCow = false; Id = i % 2; cowNumber = i }  //List before checking for mills and possibly killing cow
+                
+
+                let currMills = updateMills BoardUpdate (i % 2) currentMill
+                let newCowList2 =  checkMill BoardUpdate currMills (i%2)  //List after ^
                 getCows (i + 1) newCowList2 currMills 
         getCows 0 cowList []    
     let cows,mills = phaseOne (emptyList ())
     phase2 cows 0 mills
    
+
+
+
 [<EntryPoint>]
 
 
