@@ -127,14 +127,14 @@ let getChar (cow : Cow)=
     | _ -> ' '
 
 let drawBoard (list : Cow List)  =  // print the board           
-        printfn "\n"
+        printfn ""
         printCenterLine " __  __                           _                               _              "
         printCenterLine "|  \/  |   ___      _ _   __ _   | |__    __ _      _ _   __ _   | |__    __ _   "
         printCenterLine "| |\/| |  / _ \    | '_| / _` |  | '_ \  / _` |    | '_| / _` |  | '_ \  / _` |  "
         printCenterLine "|_|__|_|  \___/   _|_|_  \__,_|  |_.__/  \__,_|   _|_|_  \__,_|  |_.__/  \__,_|  "
         printCenterLine "_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"| "
         printCenterLine "\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-' "
-
+        printfn ""
         
         printCenterLine "     1   2   3   4   5   6   7"
         printCenterLine ""
@@ -498,7 +498,7 @@ let Start () =
                 | true -> Console.ForegroundColor <- ConsoleColor.Red           // Still working on this one
                 | _ -> Console.ForegroundColor <- ConsoleColor.Cyan 
                 drawBoard list                                            // When a mill is formed, it only draws the cow that formed the mill, after you kill a cow
-                printfn "\n\n"
+                printfn ""
                 printCenterLine (String.Format("-----  [Player {0}: Enter a cow position]  -----", (i % 2 + 1)))   // Had to use formating for function to work properly
                 let pos = getBlankPos list
                 Console.Clear()
