@@ -79,21 +79,6 @@ let updateCOWList (oldList: Cow List) (possition: int) (newCow: Cow) =
                 |_-> 
                     updateList (oldList.[a]::newList) (a-1)
         updateList [] (oldList.Length - 1)    
-(*
-    let rec moveCow (cowList : Cow List) (playerID : int) =
-        printf "player %i, chose a cow to move" playerID
-        let input = int (Console.ReadLine ())
-        let isCowThere = (getCowAtPos input cowList).Id = -1
-        let input2 = 
-            match isCowThere with
-            | false -> printfn "Where do you want to move your cow?"
-                        int (Console.ReadLine ())
-            | _ -> printfn "Cannt move there"
-                    moveCow cowList playerID              
-            match (isValidMove (getCowAtPos input cowList) input2) with
-            | true -> updateCOWList cowList input2 {Position = input2; isFlyingCow = false; Id = playerID}
-            | false -> moveCow cowList input2
-            *)
         
 //Kill chosen cow and replace dead cow with empty cow
 let killCow (pos : int) (cows : Cow List) =        
@@ -165,8 +150,8 @@ let allMills = [
     { millPos = 17::20::23::[]; isNew = false; previousForms = [[],0]; owner = -1} // E5, F6, G7
 ]
 
-let removeBrokenMill (millList : Mill List) (pos : int) =
-    List.filter ((fun (x : Mill) y -> not (x.millPos = y.millPos)) allMills.[pos]) millList
+let removeBrokenMill (millList : Mill List) (mill : Mill) =
+    List.filter ((fun (x : Mill) y -> not (x.millPos = y.millPos)) mill) millList
 
 // Does this player own this mill?
 let isOwned (playerID : int) (idx : int) (cows : Cow List) =
@@ -192,7 +177,7 @@ let updateMillList (oldList: Mill List) (position: int) (newMill: Mill) : Mill L
                     updateList (oldList.[a]::newList) (a-1)
         updateList [] (oldList.Length - 1)  
 
-let getCurrentMillPos (millList : Mill List) (mill: Mill) =
+let getMillPos (millList : Mill List) (mill: Mill) =
     let rec find i =
         match i < millList.Length with
         | true ->
@@ -207,8 +192,15 @@ let getCurrentMillPos (millList : Mill List) (mill: Mill) =
 let rec getMillForms (prevMills : (int List * int) List) =
     List.map (fun (nums,counter) -> nums) prevMills
 
+// This should be a choose. Luckly it's should, not have to. sigh....
 let rec updateCounters  (list : ((int List)*int) List) =
-    List.map (fun (nums,counter) -> nums,counter-1) list
+   let list = List.map (fun (nums,counter) -> nums,counter-1) list
+   List.filter (fun (nums,counter) -> 
+                    match counter with
+                    | 0 -> false
+                    | _ -> true) list
+
+
 
 // Dear, Yusuf. RUN WHILE YOU STILL CAN!
 //Update mill list
@@ -235,9 +227,9 @@ let updateMills (cows : Cow List)  (playerID : int) (currMill : Mill List) : Mil
                          | list -> 
                             match List.tryFind ((fun x y -> x = y) cowNumberList) (getMillForms prevMill ) with
                             // It is not unique, mill has been formed twice in the past two terms with different cows
-                            | None -> check (i + 1) (updateMillList currMill (getCurrentMillPos currMill allMills.[i]) {millPos = a; isNew = false ;previousForms = (cowNumberList,2)::prevMill; owner = playerID})
+                            | None -> check (i + 1) (updateMillList newMillList (getMillPos newMillList allMills.[i]) {millPos = a; isNew = false ;previousForms = (cowNumberList,2)::prevMill; owner = playerID})
                             // The same mill has been formed with the same cows within two turns. Reset counter to 2
-                            | _ -> check (i + 1) (updateMillList currMill (getCurrentMillPos currMill allMills.[i]) {millPos = a; isNew = false ;previousForms = [cowNumberList,2]; owner = playerID})
+                            | _ -> check (i + 1) (updateMillList newMillList (getMillPos newMillList allMills.[i]) {millPos = a; isNew = false ;previousForms = [cowNumberList,2]; owner = playerID})
                          | _ -> failwith "Dear Satan. Why hath thou forsaken thine loyal follower? :("
             // No. This mill does not exist on the board
             | _   ->
@@ -246,11 +238,13 @@ let updateMills (cows : Cow List)  (playerID : int) (currMill : Mill List) : Mil
                 // Mill didn't exist, carry on
                 | None -> check (i + 1) newMillList 
                 // Mill did exist, update counters
-                //
-                //TODO: Remove mill if counter = 0 (mill has been unformed fro two turns and can be formed again)
-                //
-
-                | Some {millPos = a; isNew = b; previousForms = prevMill} -> check (i + 1) (updateMillList currMill (getCurrentMillPos currMill allMills.[i]) {millPos = a; isNew = false ;previousForms = (updateCounters prevMill); owner = playerID})
+                | Some {millPos = a; isNew = b; previousForms = prevMill} -> // Are all the counters zero?
+                                                                             let updatedMill =  {millPos = a; isNew = false ;previousForms = (updateCounters prevMill); owner = playerID}
+                                                                             match updatedMill.previousForms  with
+                                                                             // Yes, remove mill from list. Mill can be used to kill cows again
+                                                                             | [] -> check (i + 1) (removeBrokenMill newMillList updatedMill)
+                                                                             // No. Atleast one form of the mill had been formed within the last two turns
+                                                                             | _ -> check (i + 1) (updateMillList newMillList (getMillPos newMillList updatedMill) updatedMill)
     check 0 currMill
 
         
