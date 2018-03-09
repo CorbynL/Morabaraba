@@ -127,8 +127,15 @@ let getChar (cow : Cow)=
     | _ -> ' '
 
 let drawBoard (list : Cow List)  =  // print the board           
-        let line = "                                       "
-        printfn "\n\n\n\n"
+        printfn "\n"
+        printCenterLine " __  __                           _                               _              "
+        printCenterLine "|  \/  |   ___      _ _   __ _   | |__    __ _      _ _   __ _   | |__    __ _   "
+        printCenterLine "| |\/| |  / _ \    | '_| / _` |  | '_ \  / _` |    | '_| / _` |  | '_ \  / _` |  "
+        printCenterLine "|_|__|_|  \___/   _|_|_  \__,_|  |_.__/  \__,_|   _|_|_  \__,_|  |_.__/  \__,_|  "
+        printCenterLine "_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"| "
+        printCenterLine "\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-' "
+
+        
         printCenterLine "     1   2   3   4   5   6   7"
         printCenterLine ""
         printCenterLine (String.Format(" A   ({0})---------({1})---------({2})    ", (getChar list.[0]), (getChar list.[1]), (getChar list.[2])))
