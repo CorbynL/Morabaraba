@@ -461,7 +461,7 @@ let phaseOne cowList =
             changeBoardColour playerID
             drawBoard list
             printfn ""
-            printCenterLine (String.Format("-----  [Player {0}: Enter a cow position]  -----", (i % 2 + 1)))   // Had to use formating for function to work properly
+            printCenterLine (String.Format("-----  [Player {0}: Enter a cow position, You have {1} cows left to place]  -----", (i % 2 + 1), floor (float(25-i)/2.0)))   // Had to use formating for function to work properly
             let pos = getBlankPos list
             Console.Clear()
             let BoardUpdate = updateCOWList list pos {Position = pos; isFlyingCow = false; Id = i % 2; cowNumber = i }  // List before checking for mills and possibly killing cow
