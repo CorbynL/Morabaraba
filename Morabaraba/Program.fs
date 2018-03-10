@@ -338,19 +338,42 @@ let updateMills (cows : Cow List)  (playerID : int) (currMill : Mill List) : Mil
                     // No. Atleast one form of the mill had been formed within the last two turns
                     | _ -> check (i + 1) (updateMillList newMillList (getMillPos newMillList updatedMill) updatedMill)
     check 0 currMill
-
-        
+     
 let getOpponent playerID =
     match playerID with
     | 0 -> 1
     | 1 -> 0
     | _ -> failwith "Invalid player"
 
+let getPlayerCowLength (cowList : Cow List) (playerID : int) =
+    List.fold (fun initial (cow : Cow) -> 
+        match cow.Id = playerID with
+        | true -> initial + 1
+        | _ -> initial) 0 cowList
+
+// Check if all cows a players own are in mills
+let allInMill (cows : Cow List) (mills : Mill List) playerID = 
+    let rec check (i : int) (cowList : int List) =
+        match i < allMills.Length with
+        | false -> cowList
+        | _ ->
+            match isOwned playerID i cows with
+            | true -> check (i + 1) allMills.[i].millPos@cowList
+            | _ -> check (i + 1) cowList
+    
+    // Im a little proud of this one :^)
+    // If number of cows = number of distinct cows in mills, then all cows are in mills
+    let a = getPlayerCowLength  cows playerID
+    let b = (check 0 []) |> Seq.distinct |> List.ofSeq
+    match a = b.Length with
+    | true -> true
+    |_ -> false
+
 // Check if chosen cow is in a mill
-let canKill (pos : int) (mills : Mill List) (player : int) (cows : Cow List) =
-    let playerMills = getPlayerMills mills player cows                          // Get Player mills
-    let enemyMills = getPlayerMills mills (getOpponent player) cows             // Get enemy mills
-    match (getCowAtPos pos cows).Id = player || (getCowAtPos pos cows).Id = -1 with                               // Check if cow to kill is players own cow    
+let canKill (pos : int) (mills : Mill List) (playerID : int) (cows : Cow List) =
+    let playerMills = getPlayerMills mills playerID cows                          // Get Player mills
+    let enemyMills = getPlayerMills mills (getOpponent playerID) cows             // Get enemy mills
+    match (getCowAtPos pos cows).Id = playerID || (getCowAtPos pos cows).Id = -1 with                               // Check if cow to kill is players own cow    
     | true -> false
     | _ ->
         let rec check i =   
@@ -362,12 +385,11 @@ let canKill (pos : int) (mills : Mill List) (player : int) (cows : Cow List) =
                 | _ -> false                                              // Cow is in mill. Cannot kill it
         match playerMills.Length = 0 with                                 // Start checking if cow is in mill
         | true -> false
-        | _ -> check 0
- 
+        | _ ->
+            match allInMill cows mills (getOpponent playerID) with
+            | false -> check 0
+            | _ -> true  
 
-
-    
-// Checks if given mill was created on the players current turn
 let isNewMill (mills : Mill List) =
     let newMill (mill : Mill) = mill.isNew = true
     List.exists newMill mills
@@ -408,11 +430,6 @@ let rec getMove (cowList : Cow List) (playerID : int) =
             printCenterLine "The position you chose is either empty or not your cow."
             getMove cowList playerID
 
-let getPlayerCowLength (cowList : Cow List) (playerID : int) =
-    List.fold (fun initial (cow : Cow) -> 
-        match cow.Id = playerID with
-        | true -> initial + 1
-        | _ -> initial) 0 cowList
     
 let rec checkMove (position : int) (cowList : Cow List) (playerID : int) =
     let numberOfCows = getPlayerCowLength cowList playerID
@@ -466,7 +483,7 @@ let phaseOne cowList =
             Console.Clear()
             let BoardUpdate = updateCOWList list pos {Position = pos; isFlyingCow = false; Id = i % 2; cowNumber = i }  // List before checking for mills and possibly killing cow
             let currMills = updateMills BoardUpdate playerID currentMill
-            let newCowList2 =  checkMill BoardUpdate currMills playerID  
+            let newCowList2 =  checkMill BoardUpdate currMills playerID 
             getCows (i + 1) newCowList2 currMills (getOpponent playerID)
     getCows 0 cowList [] 0
             
