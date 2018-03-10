@@ -136,7 +136,7 @@ let drawBoard (list : Cow List)  =  // print the board
         printCenterLine "\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-' "
         printfn ""
         
-        printCenterLine "     1   2   3   4   5   6   7"
+        printCenterLine "  1   2   3   4   5   6   7"
         printCenterLine ""
         printCenterLine (String.Format(" A   ({0})---------({1})---------({2})    ", (getChar list.[0]), (getChar list.[1]), (getChar list.[2])))
         printCenterLine "     | \         |         / |    "
