@@ -185,8 +185,36 @@ let isValidMove (cow : Cow) (position : int) =
     | (22,19) | (22,21) | (22,23)
     | (23,14) | (23,20) | (23,22) -> position
     | _ -> -1 
-        
 
+// Seems redundant :? But it is what it is
+let possibleMoves cowPos = 
+    match cowPos with
+    | 0  -> [1;3;9]     
+    | 1  -> [0;2;4]
+    | 2  -> [1;5;14]
+    | 3  -> [0;4;6;10]
+    | 4  -> [1;3;5;7]
+    | 5  -> [2;4;8;13]
+    | 6  -> [3;7;11]
+    | 7  -> [4;6;8]
+    | 8  -> [5;7;12]
+    | 9  -> [0;10;21]
+    | 10 -> [3;9;11;18]
+    | 11 -> [6;10;15]
+    | 12 -> [8;13;17]
+    | 13 -> [5;12;14;20]
+    | 14 -> [2;13;23]
+    | 15 -> [11;16;18]
+    | 16 -> [15;17;19]
+    | 17 -> [12;16;20]
+    | 18 -> [10;15;19;21]
+    | 19 -> [16;18;20;22]
+    | 20 -> [13;17;19;23]
+    | 21 -> [9;18;22]
+    | 22 -> [19;21;23]
+    | 23 -> [14;20;22]
+    | _ -> failwith "No no, jail is that way."
+    
     //All possible mill variations
 let allMills = [
     { millPos =    3::4::5::[]; isNew = false; previousForms = [[],0]; owner = -1} // B2, B4, B6
@@ -247,6 +275,34 @@ let updateCOWList (oldList: Cow List) (possition: int) (newCow: Cow) =
 // Kill chosen cow and replace dead cow with empty cow
 let killCow (pos : int) (cows : Cow List) =        
     updateCOWList cows pos {emptyCow with Position=pos}
+
+let isDraw (cowList : Cow List) playerID =
+
+    let rec getPlayerCowPos i cowPos =
+        match i < cowList.Length with
+        false -> cowPos 
+        | _ ->
+            match cowList.[i].Id = playerID with
+            | false -> getPlayerCowPos (i + 1) cowPos 
+            | _ -> getPlayerCowPos (i + 1) (cowList.[i].Position::cowPos)
+
+    let rec allMoves i (cowNum : int List) (moves : int List) =
+        match i < cowNum.Length with
+        | false ->
+                let moves = moves |> Seq.distinct |> List.ofSeq
+                moves
+        | _ -> allMoves (i + 1) cowNum moves@(possibleMoves cowNum.[i])
+    
+    let possibleMoves = allMoves 0 (getPlayerCowPos 0 []) []
+
+    let rec Draw i  =
+        match i < possibleMoves.Length with
+        | false -> true
+        | _ -> match (getCowAtPos possibleMoves.[i] cowList).Id = -1 with
+               | true -> false
+               | _ -> Draw (i + 1)
+    
+    Draw 0
 
 // Removes a mill from a list of mills when a mill is broken
 let removeBrokenMill (millList : Mill List) (mill : Mill) =
@@ -488,20 +544,26 @@ let phaseOne cowList =
     getCows 0 cowList [] 0
             
 let rec phase2 (cowList : Cow List) (playerID : int) (mills : Mill List) =
-    match (getPlayerCowLength cowList playerID) > 2 with
-    | true ->
-        Console.Clear ()
-        changeBoardColour playerID
-        drawBoard cowList
-        let cowToMove = getMove cowList playerID
-        let cowToMove, placeToMove = checkMove cowToMove cowList playerID // WOW!!! tuple pattern!!!!!!!
-        let cowMoved = updateCOWList cowList placeToMove {getCowAtPos cowToMove cowList with Position = placeToMove } // Move our cow to this position
-        let newCowList = updateCOWList cowMoved cowToMove {emptyCow with Position = cowToMove}   // Replace cow at position with empty cow
-        let newMills = updateMills newCowList playerID mills
-        let newNewCowList = checkMill newCowList newMills playerID
-        phase2 newNewCowList (getOpponent playerID) newMills
-    | _ -> printfn "player %i wins!" (getOpponent playerID)
-           Console.ReadKey () 
+    match isDraw cowList playerID with
+    | true -> 
+              drawBoard cowList
+              printfn "DRAW"
+              Console.ReadKey ()
+    | _ ->
+        match (getPlayerCowLength cowList playerID) > 2 with
+        | true ->
+            Console.Clear ()
+            changeBoardColour playerID
+            drawBoard cowList
+            let cowToMove = getMove cowList playerID
+            let cowToMove, placeToMove = checkMove cowToMove cowList playerID // WOW!!! tuple pattern!!!!!!!
+            let cowMoved = updateCOWList cowList placeToMove {getCowAtPos cowToMove cowList with Position = placeToMove } // Move our cow to this position
+            let newCowList = updateCOWList cowMoved cowToMove {emptyCow with Position = cowToMove}   // Replace cow at position with empty cow
+            let newMills = updateMills newCowList playerID mills
+            let newNewCowList = checkMill newCowList newMills playerID
+            phase2 newNewCowList (getOpponent playerID) newMills
+        | _ -> printfn "player %i wins!" (getOpponent playerID)
+               Console.ReadKey () 
 
 //Start game loop
 let Start () =  
