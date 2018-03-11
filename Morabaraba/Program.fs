@@ -87,6 +87,22 @@ let startUpPrompt () =      //Try find a shorter way of doing this at some point
     Console.ReadKey()
     Console.Clear()
 
+let showRules () =
+    printf "\n\n"
+    printCenterLine "|----- RULES -----|\n"
+    printCenterLine "1. Form mills to kill your opponents cows.\n"
+    printCenterLine "2. The same mill can be only used again 2 turns after it was broken.\n"
+    printCenterLine "Note: mills include the position of the cows, and"
+    printCenterLine "the particular cows used in the mill!\n"
+    printCenterLine "3. If no vaild moves are available to one player, the game ends in a draw.\n"
+    printCenterLine "4. If all of your cows are in mills, once you opponent"
+    printCenterLine "forms a new mill, he/she may kill any of your cows.\n"
+    printCenterLine "5. If you have 3 cows left, you may place"
+    printCenterLine "them on any available spot on the board.\n"
+    printCenterLine "6. If you only have 2 cows left, you lose.\n"
+    printCenterLine "Press any key to continue..."
+    Console.ReadKey ()
+    Console.Clear ()
 
 // Check to see if a valid input has been recieved
 let rec getPos ()=                             
@@ -256,10 +272,6 @@ let emptyList () =
 let getCowID pos (cows : Cow List) =                            // Could just use cows.[pos].Id
     cows.[pos].Id
 
-// Returns a cow at a position
-let getCowAtPos (pos) (cows : Cow List) =
-    List.find (fun (x : Cow) -> pos = x.Position) cows          // Could just use cows.[pos]
-
 // Replace cow at a given position with a given cow
 let updateCOWList (oldList: Cow List) (possition: int) (newCow: Cow) =
         let rec updateList (newList:Cow List) a =
@@ -298,7 +310,7 @@ let isDraw (cowList : Cow List) playerID =
     let rec Draw i  =
         match i < possibleMoves.Length with
         | false -> true
-        | _ -> match (getCowAtPos possibleMoves.[i] cowList).Id = -1 with
+        | _ -> match (cowList.[possibleMoves.[i]]).Id = -1 with
                | true -> false
                | _ -> Draw (i + 1)
     
@@ -361,7 +373,7 @@ let updateMills (cows : Cow List)  (playerID : int) (currMill : Mill List) : Mil
         | false -> newMillList
         | _ ->
             // Defining data here for function readability
-            let cow1,cow2,cow3 = (getCowAtPos allMills.[i].millPos.[0] cows),(getCowAtPos allMills.[i].millPos.[1] cows),(getCowAtPos allMills.[i].millPos.[2] cows)
+            let cow1,cow2,cow3 = (cows.[allMills.[i].millPos.[0]]),(cows.[allMills.[i].millPos.[1]]),(cows.[allMills.[i].millPos.[2]])
             let cowNumberList = [cow1.cowNumber;cow2.cowNumber;cow3.cowNumber]
             // Does this particular mill exist on the board (for playerID)?
             match isOwned playerID i cows with
@@ -429,7 +441,7 @@ let allInMill (cows : Cow List) (mills : Mill List) playerID =
 let canKill (pos : int) (mills : Mill List) (playerID : int) (cows : Cow List) =
     let playerMills = getPlayerMills mills playerID cows                          // Get Player mills
     let enemyMills = getPlayerMills mills (getOpponent playerID) cows             // Get enemy mills
-    match (getCowAtPos pos cows).Id = playerID || (getCowAtPos pos cows).Id = -1 with                               // Check if cow to kill is players own cow    
+    match cows.[pos].Id = playerID || cows.[pos].Id = -1 with                               // Check if cow to kill is players own cow    
     | true -> false
     | _ ->
         let rec check i =   
@@ -479,7 +491,7 @@ let rec getMove (cowList : Cow List) (playerID : int) =
         printCenterLine "Invalid position chosen."
         getMove cowList playerID
     | position ->
-        let cow = getCowAtPos position cowList
+        let cow = cowList.[position] 
         match playerID = cow.Id with
         | true -> position
         | _ -> 
@@ -496,7 +508,7 @@ let rec checkMove (position : int) (cowList : Cow List) (playerID : int) =
         printCenterLine "Invalid position chosen."
         checkMove position cowList playerID
     | newPosition ->
-        let cow = getCowAtPos  position cowList
+        let cow = cowList.[position] 
         let isValid = 
             match numberOfCows < 4 with
             | true -> newPosition
@@ -508,7 +520,7 @@ let rec checkMove (position : int) (cowList : Cow List) (playerID : int) =
             printCenterLine "Invalid move choice for given cow."
             checkMove position cowList playerID
         | _ -> 
-            match (getCowAtPos newPosition cowList).Id with
+            match cowList.[newPosition].Id with
             | -1 -> position, newPosition
             | _ -> checkMove position cowList playerID
 
@@ -557,7 +569,7 @@ let rec phase2 (cowList : Cow List) (playerID : int) (mills : Mill List) =
             drawBoard cowList
             let cowToMove = getMove cowList playerID
             let cowToMove, placeToMove = checkMove cowToMove cowList playerID // WOW!!! tuple pattern!!!!!!!
-            let cowMoved = updateCOWList cowList placeToMove {getCowAtPos cowToMove cowList with Position = placeToMove } // Move our cow to this position
+            let cowMoved = updateCOWList cowList placeToMove {cowList.[cowToMove] with Position = placeToMove } // Move our cow to this position
             let newCowList = updateCOWList cowMoved cowToMove {emptyCow with Position = cowToMove}   // Replace cow at position with empty cow
             let newMills = updateMills newCowList playerID mills
             let newNewCowList = checkMill newCowList newMills playerID
@@ -567,6 +579,7 @@ let rec phase2 (cowList : Cow List) (playerID : int) (mills : Mill List) =
 
 //Start game loop
 let Start () =  
+    showRules ()
     startUpPrompt ()     
     let cows,mills = phaseOne (emptyList ())
     phase2 cows 0 mills
