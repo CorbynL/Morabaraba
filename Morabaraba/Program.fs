@@ -31,8 +31,8 @@ type Mill = { // Creates the structure to allow for mills and its rules.
 }
 
 // Unicorn - GameBoard
-type GameBoard =
-| Board of Cow List
+//type GameBoard =              // This isn't used anywhere? Should we just remove it?
+//| Board of Cow List
 
 
 
@@ -555,7 +555,7 @@ let rec phase2 (cowList : Cow List) (playerID : Player) (mills : Mill List) =
     match isDraw cowList playerID with
     | true -> 
               drawBoard cowList
-              printfn "DRAW"
+              printCenterLine "DRAW"
               Console.ReadKey ()
     | _ ->
         match (getPlayerCowLength cowList playerID) > 2 with
