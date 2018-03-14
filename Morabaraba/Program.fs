@@ -93,7 +93,6 @@ let startUpPrompt () =
     printCenterLine" --- [ Press Enter to Begin ] --- "
 
     Console.ReadKey()
-    Console.Clear()
 
 
 // Check to see if a valid input has been recieved
@@ -137,6 +136,7 @@ let convertID (playerID : Player) =
     | _ -> failwith "There is no 3, because the rule is 3 is a crowd."
 
 let drawBoard (list : Cow List)  =  // print the board           
+        Console.Clear()
         printfn ""
         printCenterLine " __  __                           _                               _              "
         printCenterLine "|  \/  |   ___      _ _   __ _   | |__    __ _      _ _   __ _   | |__    __ _   "
@@ -478,7 +478,6 @@ let checkMill (cows : Cow List) (mills : Mill list) (playerID : Player) =
                 match canKill (cowToKill) mills playerID cows with
                 | true -> killCow cowToKill cows                   
                 | _ ->
-                    Console.Clear ()
                     drawBoard cows
                     printCenterLine "Cannot kill that one, Please enter a new position"
                     tryKill ()
@@ -515,7 +514,6 @@ let rec checkMove (position : int) (cowList : Cow List) (playerID : Player) =
             | _ -> isValidMove cow newPosition
         match isValid with
         | -1 -> 
-            Console.Clear()
             drawBoard cowList
             printCenterLine "Invalid move choice for given cow."
             checkMove position cowList playerID
@@ -542,13 +540,11 @@ let phaseOne cowList =
         match i with
         | 24 -> list, currentMill
         | _ ->
-            Console.Clear()
             changeBoardColour playerID
             drawBoard list
             printfn ""
             printCenterLine (String.Format("-----  [Player {0}: Enter a cow position, You have {1} cows left to place]  -----", (i % 2 + 1), floor (float(25-i)/2.0)))   // Had to use formating for function to work properly
             let pos = getBlankPos list
-            Console.Clear()
             let BoardUpdate = updateCOWList list pos {Position = pos; isFlyingCow = false; Id = playerID; cowNumber = i }  // List before checking for mills and possibly killing cow
             let currMills = updateMills BoardUpdate playerID currentMill
             let newCowList2 =  checkMill BoardUpdate currMills playerID 
@@ -564,7 +560,6 @@ let rec phase2 (cowList : Cow List) (playerID : Player) (mills : Mill List) =
     | _ ->
         match (getPlayerCowLength cowList playerID) > 2 with
         | true ->
-            Console.Clear ()
             changeBoardColour playerID
             drawBoard cowList
             let cowToMove = getMove cowList playerID
