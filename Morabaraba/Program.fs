@@ -42,6 +42,9 @@ type GameBoard =
 //
 //******************************************************************************************************************************
 
+// Set the Console Size to fit all the rules etc.
+Console.SetWindowSize(Console.WindowWidth, 50)
+
 // Offset the text to the center of the console
 let printCenterLine =
     fun (line: string) -> 
@@ -52,7 +55,6 @@ let printCenterLine =
 // Prompted when games starts displaying rules and controls
 let startUpPrompt () =   
     Console.ForegroundColor <- ConsoleColor.Green 
-    Console.Title ="Morabaraba"
 
     printCenterLine "   *                                                        "
     printCenterLine " (  `                       )                      )        "
@@ -62,11 +64,8 @@ let startUpPrompt () =
     printCenterLine "|  \/  | ((_) ((_)((_)_ | |(_)((_)_  ((_)((_)_ | |(_)((_)_  "
     printCenterLine "| |\/| |/ _ \| '_|/ _` || '_ \/ _` || '_|/ _` || '_ \/ _` | "
     printCenterLine "|_|  |_|\___/|_|  \__,_||_.__/\__,_||_|  \__,_||_.__/\__,_| "
-
-    
     printfn "\n\n\n"
     printCenterLine " ------------------- Let the Games Begin! ------------------- "
-    
     printfn "\n\n"
     printCenterLine " ---- [ Rules ] ---- "    
     printfn ""
@@ -146,7 +145,7 @@ let drawBoard (list : Cow List)  =  // print the board
         printCenterLine "_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"|_|\"\"\"\"\"| "
         printCenterLine "\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-'\"`-0-0-' "
         printfn ""
-        
+    
         printCenterLine "  1   2   3   4   5   6   7"
         printCenterLine ""
         printCenterLine (String.Format(" A   ({0})---------({1})---------({2})    ", (getChar list.[0]), (getChar list.[1]), (getChar list.[2])))
