@@ -1,10 +1,12 @@
 ﻿open System  
 
-//NOTE: Since one of our project members keeps referring to Discriminated Unions as Unicorns, they will be called as such (He is special).
-
-//FIX - Reload page after addding new MILL and check if end game player is stated correctly
-
+//******************************************************************************************************************************
+//
 // -------------------------------------------------------- Data Structures ----------------------------------------------------
+//
+//******************************************************************************************************************************
+
+//NOTE: Since one of our project members keeps referring to Discriminated Unions as Unicorns, they will be called as such (He is special).
 
 // Unicorn - Player
 type Player = //For us to distinguish between players in our code
@@ -30,12 +32,6 @@ type Mill = { // Creates the structure to allow for mills and its rules.
     Id : Player                               // To check who this mill belongs too
 }
 
-// Unicorn - GameBoard
-//type GameBoard =              // This isn't used anywhere? Should we just remove it?
-//| Board of Cow List
-
-
-
 //******************************************************************************************************************************
 //
 // -------------------------------------------------------- User Interaction ---------------------------------------------------
@@ -50,7 +46,6 @@ let printCenterLine =
     fun (line: string) -> 
         Console.SetCursorPosition((Console.WindowWidth - line.Length) / 2, Console.CursorTop)
         Console.WriteLine (line)
-
 
 // Prompted when games starts displaying rules and controls
 let startUpPrompt () =   
@@ -94,8 +89,7 @@ let startUpPrompt () =
 
     Console.ReadKey()
 
-
-// Check to see if a valid input has been recieved
+// Get and check to see if a valid input has been recieved
 let rec getPos ()=                             
         Console.SetCursorPosition((Console.WindowWidth) / 2, Console.CursorTop)
         let pos = 
@@ -108,33 +102,41 @@ let rec getPos ()=
             | "f2" -> 18| "f4" -> 19| "f6" -> 20
             | "g1" -> 21| "g4" -> 22| "g7" -> 23
             | _ -> -1  
-        match pos = -1 with
-        | false -> pos
-        | _ -> 
-            printCenterLine "Invalid possition, please enter a new one:"
+        match pos with
+        | -1 -> 
+            printfn ""
+            printCenterLine "Invalid position, please enter a new one:"
             getPos ()
+        | _ -> pos            
     
-// Check to see if the position is blank and valid
+// Get and check to see if the position is blank and valid
 let rec getBlankPos (boardState: Cow List)=                             
         let pos = getPos()
         match boardState.[pos].Id with
         | EMPTY -> pos
         | _-> 
-            printCenterLine "Please Choose a position where there are no cows:"
-            boardState |> getBlankPos
+            printCenterLine "-----  [ Please choose a position where there are no cows ]  -----"
+            getBlankPos (boardState)
 
+// Takes a cow and returns the char representation for the board
 let getChar (cow : Cow)=
     match cow.Id with
     | ONE -> 'r'
     | TWO -> 'b'
     | _ -> ' '
 
-let convertID (playerID : Player) =
+// Takes any ID and converts it to its numerical representation
+let showWinner (playerID : Player) =
     match playerID with
-    | ONE -> 1
-    | TWO -> 2
+    | ONE -> 
+        printfn ""
+        printCenterLine "Player 2 wins!"
+    | TWO -> 
+        printfn ""
+        printCenterLine "Player 1 wins!"
     | _ -> failwith "There is no 3, because the rule is 3 is a crowd."
 
+// Takes a list of cows and prints them into a predefined board format at their respective positions
 let drawBoard (list : Cow List)  =  // print the board           
         Console.Clear()
         printfn ""
@@ -161,9 +163,11 @@ let drawBoard (list : Cow List)  =  // print the board
         printCenterLine (String.Format(" F    |  ({0})-----({1})-----({2})  |    ", (getChar list.[18]), (getChar list.[19]), (getChar list.[20])))
         printCenterLine "     | /         |         \ |    "
         printCenterLine (String.Format(" G   ({0})---------({1})---------({2})    ", (getChar list.[21]), (getChar list.[22]), (getChar list.[23])))
- 
+
+// A base value to use if we want to create an empty cow
 let emptyCow = {Position = -1; isFlyingCow = false; Id = EMPTY ; cowNumber = -1}
 
+// A base value to use if we want to create an empty mill
 let emptyMill = { millPos = []; isNew = false; previousForms = [[],0]; Id = EMPTY}
 
 //******************************************************************************************************************************
@@ -172,37 +176,7 @@ let emptyMill = { millPos = []; isNew = false; previousForms = [[],0]; Id = EMPT
 //
 //******************************************************************************************************************************    
 
-
-// Positions a cow can move from at a position
-let isValidMove (cow : Cow) (position : int) =
-    match cow.Position, position with
-    | (0,1) | (0,3) | (0,9)
-    | (1,0) | (1,2) | (1,4) 
-    | (2,1) | (2,5) | (2,14)
-    | (3,0) | (3,4) | (3,6) | (3,10) 
-    | (4,1) | (4,3) | (4,5) | (4,7) 
-    | (5,2) | (5,4) | (5,8) | (5,13)
-    | (6,3) | (6,7) | (6,11) 
-    | (7,4) | (7,6) | (7,8) 
-    | (8,5) | (8,7) | (8,12) 
-    | (9,0) | (9,10)| (9,21) 
-    | (10,3) | (10,9) | (10,11) | (10,18) 
-    | (11,6) | (11,10) | (11,15) 
-    | (12,8) | (12,13) | (12,17) 
-    | (13,5) | (13,12) | (13,14) | (13,20) 
-    | (14,2) | (14,13) | (14,23) 
-    | (15,11) | (15,16) | (15,18) 
-    | (16,15) | (16,17) | (16,19) 
-    | (17,12) | (17,16) | (17,20) 
-    | (18,10) | (18,15) | (18,19) | (18,21) 
-    | (19,16) | (19,18) | (19,20) | (19,22) 
-    | (20,13) | (20,17) | (20,19) | (20,23) 
-    | (21,9) | (21,18) | (21,22) 
-    | (22,19) | (22,21) | (22,23)
-    | (23,14) | (23,20) | (23,22) -> position
-    | _ -> -1 
-
-// Seems redundant :? But it is what it is
+// Takes a cow position and returns all of the neighbours to that position
 let possibleMoves cowPos = 
     match cowPos with
     | 0  -> [ 1; 3; 9]     
@@ -230,8 +204,14 @@ let possibleMoves cowPos =
     | 22 -> [ 19; 21; 23]
     | 23 -> [ 14; 20; 22]
     | _ -> failwith "No no, jail is that way."
+
+ // Takes a cow and a new position and checks to see if the possible move is valid or not (are they neighbouring positions?)
+let isValidMove (cow : Cow) (position : int) =
+    match List.tryFind (fun t -> t = position) (possibleMoves (cow.Position)) with
+    | None -> -1
+    | Some (pos) -> pos
     
-//All possible mill variations
+// All possible mill variations
 let allMills = [  
     { emptyMill with millPos =    0::1::2::[]} // A1, A4, A7
     { emptyMill with millPos =    3::4::5::[]} // B2, B4, B6    
@@ -255,18 +235,16 @@ let allMills = [
     { emptyMill with millPos = 17::20::23::[]} // E5, F6, G7
 ]
 
-
 //******************************************************************************************************************************
 //
 // -------------------------------------------------------- Function Things ----------------------------------------------------
 //
 //****************************************************************************************************************************** 
 
-
 // Initialise cow list with empty cows                
 let emptyList () =
     let list = List.init 24 (fun x -> emptyCow)
-    List.mapi (fun i (x : Cow) -> {x with Position = i}) list 
+    List.mapi (fun i (x : Cow) -> {x with Position = i}) (list) 
 
 // Gets the ID of a cow at a position on the board
 let getCowID pos (cows : Cow List) =                            
@@ -288,11 +266,12 @@ let updateCOWList (oldList: Cow List) (possition: int) (newCow: Cow) =
 let killCow (pos : int) (cows : Cow List) =        
     updateCOWList cows pos {emptyCow with Position=pos}
 
+// Checks to see if the board is in a Draw state 
 let isDraw (cowList : Cow List) playerID =
 
     let rec getPlayerCowPos i cowPos =
         match i < cowList.Length with
-        false -> cowPos 
+        | false -> cowPos 
         | _ ->
             match cowList.[i].Id = playerID with
             | false -> getPlayerCowPos (i + 1) cowPos 
@@ -300,9 +279,7 @@ let isDraw (cowList : Cow List) playerID =
 
     let rec allMoves i (cowNum : int List) (moves : int List) =
         match i < cowNum.Length with
-        | false ->
-                let moves = moves |> Seq.distinct |> List.ofSeq
-                moves
+        | false -> moves |> Seq.distinct |> List.ofSeq                
         | _ -> allMoves (i + 1) cowNum moves@(possibleMoves cowNum.[i])
     
     let possibleMoves = allMoves 0 (getPlayerCowPos 0 []) []
@@ -364,8 +341,8 @@ let rec updateCounters  (list : ((int List)*int) List) =
                     | 0 -> false
                     | _ -> true) list
 
-
 // Dear, Yusuf. RUN WHILE YOU STILL CAN!
+
 //Update mill list
 let updateMills (cows : Cow List)  (playerID : Player) (currMill : Mill List) : Mill List =
     let rec check (i : int) newMillList =
@@ -388,7 +365,7 @@ let updateMills (cows : Cow List)  (playerID : Player) (currMill : Mill List) : 
                 // Yes. Is it unique?
                     match List.tryFind ((fun x y -> x = y) cowNumberList) (getMillForms prevMill ) with
                     // It is not unique, mill has been formed twice in the past two terms with different cows
-                    | None -> check (i + 1) (updateMillList newMillList (getMillPos newMillList allMills.[i]) {millPos = a; isNew = false ;previousForms = (cowNumberList,2)::prevMill; Id = playerID})
+                    | None -> check (i + 1) (updateMillList newMillList (getMillPos newMillList allMills.[i]) {millPos = a; isNew = true ;previousForms = (cowNumberList,2)::prevMill; Id = playerID})
                     // The same mill has been formed with the same cows within two turns. Reset counter to 2
                     | _ -> check (i + 1) (updateMillList newMillList (getMillPos newMillList allMills.[i]) {millPos = a; isNew = false ;previousForms = [cowNumberList,2]; Id = playerID})
             // No. This mill does not exist on the board
@@ -406,42 +383,43 @@ let updateMills (cows : Cow List)  (playerID : Player) (currMill : Mill List) : 
                     // No. Atleast one form of the mill had been formed within the last two turns
                     | _ -> check (i + 1) (updateMillList newMillList (getMillPos newMillList updatedMill) updatedMill)
     check 0 currMill
-     
+
+// It returns the playerID of the opponent for the given playerID     
 let getOpponent (playerID : Player) =
     match playerID with
     | ONE -> TWO
     | TWO -> ONE
     | _ -> failwith "Invalid player"
-
+    
+// Gets the number of cows that belong to a specific player in our cow list
 let getPlayerCowLength (cowList : Cow List) (playerID : Player) =
     List.fold (fun initial (cow : Cow) -> 
         match cow.Id = playerID with
         | true -> initial + 1
         | _ -> initial) 0 cowList
 
-// Check if all cows a players own are in mills
+// Check if all cows a player owns are in mills
 let allInMill (cows : Cow List) (mills : Mill List) (playerID : Player) = 
     let rec check (i : int) (cowList : int List) =
         match i < allMills.Length with
         | false -> cowList
         | _ ->
-            match isOwned (playerID : Player) (i) (cows) with
+            match isOwned (playerID : Player) i cows with
             | true -> check (i + 1) (allMills.[i].millPos@cowList)
             | _ -> check (i + 1) cowList
     
     // Im a little proud of this one :^)
     // If number of cows = number of distinct cows in mills, then all cows are in mills
-    let a = getPlayerCowLength  cows playerID
+    let a = getPlayerCowLength cows playerID
     let b = (check 0 []) |> Seq.distinct |> List.ofSeq
     match a = b.Length with
-    | true -> true
-    |_ -> false
+    | res -> res    
 
 // Check if chosen cow is in a mill
 let canKill (pos : int) (mills : Mill List) (playerID : Player) (cows : Cow List) =
     let playerMills = getPlayerMills mills playerID cows                          // Get Player mills
     let enemyMills = getPlayerMills mills (getOpponent playerID) cows             // Get enemy mills
-    match cows.[pos].Id = playerID || cows.[pos].Id = EMPTY with                               // Check if cow to kill is players own cow    
+    match cows.[pos].Id = playerID || cows.[pos].Id = EMPTY with                  // Check if cow to kill is players own cow    
     | true -> false
     | _ ->
         let rec check i =   
@@ -458,6 +436,7 @@ let canKill (pos : int) (mills : Mill List) (playerID : Player) (cows : Cow List
             | false -> check 0
             | _ -> true  
 
+// Check to see if any new mills have been formed
 let isNewMill (mills : Mill List) =
     let newMill (mill : Mill) = mill.isNew = true
     List.exists newMill mills
@@ -472,21 +451,26 @@ let checkMill (cows : Cow List) (mills : Mill list) (playerID : Player) =
         | false -> cows
         | _ ->
             drawBoard cows
-            printCenterLine "Chose cow to kill"
+            printfn ""
+            printCenterLine "-----  [ Choose a cow to kill ]  -----"
             let rec tryKill () =
                 let cowToKill = getPos ()
                 match canKill (cowToKill) mills playerID cows with
                 | true -> killCow cowToKill cows                   
                 | _ ->
                     drawBoard cows
-                    printCenterLine "Cannot kill that one, Please enter a new position"
+                    printfn ""
+                    printCenterLine "You cannot kill that cow."
+                    printCenterLine "-----  [ Please enter a new position ] -----"
                     tryKill ()
             tryKill () 
-            
+ 
+// Ask the player to choose a cow and to see if they is a valid choice, else return the position chosen
 let rec getMove (cowList : Cow List) (playerID : Player) =
-    printCenterLine "Which cow do you want to move?"
+    printCenterLine "-----  [ Which cow do you want to move? ]  -----"
     match getPos () with
     | -1 -> 
+        printfn ""
         printCenterLine "Invalid position chosen."
         getMove cowList playerID
     | position ->
@@ -494,16 +478,18 @@ let rec getMove (cowList : Cow List) (playerID : Player) =
         match playerID = cow.Id with
         | true -> position
         | _ -> 
+            printfn ""
             printCenterLine "The position you chose is either empty or not your cow."
             getMove cowList playerID
 
-    
+// With cow to move, ask where to move it and see if it is valid, else return the new position to move too
 let rec checkMove (position : int) (cowList : Cow List) (playerID : Player) =
     let numberOfCows = getPlayerCowLength cowList playerID
-    printCenterLine "Where do you want to move this cow?"
+    printCenterLine "-----  [ Where do you want to move this cow? ]  -----"
     match getPos () with
     | -1 ->
         drawBoard cowList
+        printfn ""
         printCenterLine "Invalid position chosen."
         checkMove position cowList playerID
     | newPosition ->
@@ -515,6 +501,7 @@ let rec checkMove (position : int) (cowList : Cow List) (playerID : Player) =
         match isValid with
         | -1 -> 
             drawBoard cowList
+            printfn ""
             printCenterLine "Invalid move choice for given cow."
             checkMove position cowList playerID
         | _ -> 
@@ -522,70 +509,72 @@ let rec checkMove (position : int) (cowList : Cow List) (playerID : Player) =
             | EMPTY -> position, newPosition
             | _ -> checkMove position cowList playerID
 
-
 //******************************************************************************************************************************
 //
 // -------------------------------------------------------- Game States -----------------------------------------------------
 //
 //****************************************************************************************************************************** 
 
+// Alters the console colour depending on whose turn it is
 let changeBoardColour (playerID : Player) = 
     match playerID with
-    | ONE -> Console.ForegroundColor <- ConsoleColor.Red           // Still working on this one
+    | ONE -> Console.ForegroundColor <- ConsoleColor.Red           
     | TWO -> Console.ForegroundColor <- ConsoleColor.Cyan
     | _ -> failwith "Just like half-life, there is no number 3"
 
+// The placing of cows phase
 let phaseOne cowList =
     let rec getCows i (list : Cow List) (currentMill : Mill List) (playerID : Player) =
         match i with
-        | 24 -> list, currentMill
+        | 24 -> list, currentMill // All cows have been placed
         | _ ->
-            changeBoardColour playerID
-            drawBoard list
+            // New Turn
+            changeBoardColour playerID // Change board colour
+            drawBoard list // Draw board from last known arrangement of cows
             printfn ""
-            printCenterLine (String.Format("-----  [Player {0}: Enter a cow position, You have {1} cows left to place]  -----", (i % 2 + 1), floor (float(25-i)/2.0)))   // Had to use formating for function to work properly
+            printCenterLine (String.Format("-----  [ Player {0}: Enter a cow position, You have {1} cows left to place ]  -----", (i % 2 + 1), floor (float(25-i)/2.0))) // Print amount of cows left to place
             let pos = getBlankPos list
             let BoardUpdate = updateCOWList list pos {Position = pos; isFlyingCow = false; Id = playerID; cowNumber = i }  // List before checking for mills and possibly killing cow
-            let currMills = updateMills BoardUpdate playerID currentMill
-            let newCowList2 =  checkMill BoardUpdate currMills playerID 
-            getCows (i + 1) newCowList2 currMills (getOpponent playerID)
+            let currMills = updateMills BoardUpdate playerID currentMill // Gets a list of all current mills in this given cow list state
+            let newCowList =  checkMill BoardUpdate currMills playerID // Checks for any new mills and if any cows are killed, returns the updated cow list
+            getCows (i + 1) newCowList currMills (getOpponent playerID) // Go to next turn
     getCows 0 cowList [] ONE
-            
+ 
+// The moving of cows phase
 let rec phase2 (cowList : Cow List) (playerID : Player) (mills : Mill List) =
-    match isDraw cowList playerID with
+    match isDraw cowList playerID with // Check for draw condition
     | true -> 
               drawBoard cowList
-              printCenterLine "DRAW"
+              printfn ""
+              printCenterLine "DRAW!"
               Console.ReadKey ()
     | _ ->
-        match (getPlayerCowLength cowList playerID) with
-        | 2 -> printfn "player %i wins!" (convertID (getOpponent playerID))
-               Console.ReadKey () 
-
-        | _ ->
-            changeBoardColour playerID
-            drawBoard cowList
-            let cowToMove = getMove cowList playerID
-            let cowToMove, placeToMove = checkMove cowToMove cowList playerID // WOW!!! tuple pattern!!!!!!!
+        match (getPlayerCowLength cowList playerID) with // Check for win condition
+        | 2 -> 
+            showWinner (playerID)
+            Console.ReadKey ()
+        | _ -> // Else go carry on with current players turn        
+            changeBoardColour playerID // Change board colour
+            drawBoard cowList // Draw board from last known arrangement of cows
+            printfn ""
+            let cowToMove = getMove cowList playerID // Get the next move
+            let cowToMove, placeToMove = checkMove cowToMove cowList playerID // Check this move -- WOW!!! tuple pattern!!!!!!!
             let cowMoved = updateCOWList cowList placeToMove {cowList.[cowToMove] with Position = placeToMove } // Move our cow to this position
-            let newCowList = updateCOWList cowMoved cowToMove {emptyCow with Position = cowToMove}   // Replace cow at position with empty cow
-            let newMills = updateMills newCowList playerID mills
-            let newNewCowList = checkMill newCowList newMills playerID
-            phase2 newNewCowList (getOpponent playerID) newMills
+            let newCowList = updateCOWList cowMoved cowToMove {emptyCow with Position = cowToMove}   // Replace cow at old-position with empty cow
+            let newMills = updateMills newCowList playerID mills // Update mill list with new cow formations
+            let newNewCowList = checkMill newCowList newMills playerID // Update cow positions if any cow was killed from the mills
+            phase2 newNewCowList (getOpponent playerID) newMills // Go to next turn
 
 //Start game loop
 let Start () =      
-    startUpPrompt ()     
+    startUpPrompt () // Starting text     
     let cows,mills = phaseOne (emptyList ())
     phase2 cows ONE mills
-   
-
-
+// FINISH HIM!
 
 [<EntryPoint>]
 
-
 let main argv = 
-    let x = Start ()
+    let x = Start () //Let the games begin
     printfn "%A" argv
     0 // return an integer exit code
