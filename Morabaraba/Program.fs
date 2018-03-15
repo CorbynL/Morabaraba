@@ -558,8 +558,11 @@ let rec phase2 (cowList : Cow List) (playerID : Player) (mills : Mill List) =
               printCenterLine "DRAW"
               Console.ReadKey ()
     | _ ->
-        match (getPlayerCowLength cowList playerID) > 2 with
-        | true ->
+        match (getPlayerCowLength cowList playerID) with
+        | 2 -> printfn "player %i wins!" (convertID (getOpponent playerID))
+               Console.ReadKey () 
+
+        | _ ->
             changeBoardColour playerID
             drawBoard cowList
             let cowToMove = getMove cowList playerID
@@ -569,8 +572,6 @@ let rec phase2 (cowList : Cow List) (playerID : Player) (mills : Mill List) =
             let newMills = updateMills newCowList playerID mills
             let newNewCowList = checkMill newCowList newMills playerID
             phase2 newNewCowList (getOpponent playerID) newMills
-        | _ -> printfn "player %i wins!" (convertID playerID)
-               Console.ReadKey () 
 
 //Start game loop
 let Start () =      
